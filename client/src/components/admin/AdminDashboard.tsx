@@ -40,7 +40,11 @@ export function AdminDashboard() {
 
   const fetchContacts = async () => {
     try {
-      const response = await fetch('/api/admin/contacts');
+      // Check if we're on Netlify or local development
+      const isNetlify = window.location.hostname.includes('netlify.app');
+      const endpoint = isNetlify ? '/.netlify/functions/admin' : '/api/contacts';
+      
+      const response = await fetch(endpoint);
       if (response.ok) {
         const data = await response.json();
         const contactsWithDates = data.map((contact: any) => ({
@@ -48,6 +52,8 @@ export function AdminDashboard() {
           lastActivity: new Date(contact.lastActivity)
         }));
         setContacts(contactsWithDates);
+      } else {
+        console.error('Failed to fetch contacts:', response.status);
       }
     } catch (error) {
       console.error('Error fetching contacts:', error);
@@ -58,7 +64,13 @@ export function AdminDashboard() {
 
   const fetchUserMessages = async (userName: string) => {
     try {
-      const response = await fetch(`/api/admin/messages/${encodeURIComponent(userName)}`);
+      // Check if we're on Netlify or local development
+      const isNetlify = window.location.hostname.includes('netlify.app');
+      const endpoint = isNetlify 
+        ? `/.netlify/functions/admin-messages?userName=${encodeURIComponent(userName)}`
+        : `/api/admin/messages/${encodeURIComponent(userName)}`;
+      
+      const response = await fetch(endpoint);
       if (response.ok) {
         const data = await response.json();
         const messagesWithDates = data.map((msg: any) => ({
@@ -66,6 +78,8 @@ export function AdminDashboard() {
           timestamp: new Date(msg.timestamp)
         }));
         setMessages(messagesWithDates);
+      } else {
+        console.error('Failed to fetch user messages:', response.status);
       }
     } catch (error) {
       console.error('Error fetching messages:', error);
