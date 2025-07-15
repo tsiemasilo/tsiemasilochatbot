@@ -1,0 +1,3 @@
+/api/* /.netlify/functions/server/:splat 200
+/ws /.netlify/functions/server 200
+/* /index.html 200
