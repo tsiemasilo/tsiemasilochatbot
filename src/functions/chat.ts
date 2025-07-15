@@ -70,8 +70,22 @@ export const handler: Handler = async (event, context) => {
       }));
 
       // Generate AI response
-      const moodAnalysis = await analyzeMood(content);
-      const botResponse = await generateResponse(content, conversationHistory, moodAnalysis);
+      let botResponse = "I'm having trouble connecting to my AI services right now. Please try again later.";
+      let moodAnalysis = { mood: 'neutral' as const, confidence: 0.5, suggestedEmojis: ['😊'] };
+      
+      try {
+        // Check if OpenAI API key is available
+        if (process.env.OPENAI_API_KEY || process.env.API_KEY) {
+          moodAnalysis = await analyzeMood(content);
+          botResponse = await generateResponse(content, conversationHistory, moodAnalysis);
+        } else {
+          // Fallback response when no API key is available
+          botResponse = `Hi ${userName}! I received your message: "${content}". I'm currently experiencing some technical difficulties with my AI services. Please make sure the OPENAI_API_KEY is configured in the Netlify environment variables. You can find this in your Netlify dashboard under Site settings > Environment variables.`;
+        }
+      } catch (error) {
+        console.error('AI Generation Error:', error);
+        botResponse = `Hello ${userName}! I received your message, but I'm having trouble with my AI services right now. Error: ${error.message}. Please ensure the OPENAI_API_KEY is properly configured.`;
+      }
 
       // Store bot response in database
       await db.insert(messages).values({
