@@ -4,9 +4,9 @@ import { drizzle } from 'drizzle-orm/neon-serverless';
 import { eq, desc } from 'drizzle-orm';
 import { messages } from '../../shared/schema';
 
-// Database connection for Netlify
+// Database connection for Netlify - uses secure vault
 const pool = new Pool({ 
-  connectionString: process.env.DATABASE_URL
+  connectionString: process.env.DATABASE_URL || process.env.NETLIFY_DATABASE_URL
 });
 const db = drizzle(pool);
 
