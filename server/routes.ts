@@ -86,7 +86,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
             content: botResponse,
             isUser: false,
             mood: moodAnalysis.mood,
-            userName: 'Tsie Masilo Bot'
+            userName: message.userName || 'Anonymous'
           });
           
           // Stop typing and send response
@@ -136,7 +136,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
               content: botResponse,
               isUser: false,
               mood: moodAnalysis.mood,
-              userName: 'Tsie Masilo Bot'
+              userName: message.userName || 'Anonymous'
             });
             
             // Stop typing and send response
@@ -201,6 +201,57 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.json({ success: true });
     } catch (error) {
       res.status(500).json({ error: 'Failed to clear messages' });
+    }
+  });
+
+  // Chat endpoint for HTTP API (used by Netlify and as fallback)
+  app.post('/api/chat', async (req, res) => {
+    try {
+      const { content, userName = 'Anonymous' } = req.body;
+
+      if (!content) {
+        return res.status(400).json({ error: 'Content is required' });
+      }
+
+      // Store user message
+      await storage.createMessage({
+        content,
+        isUser: true,
+        mood: 'neutral',
+        userName
+      });
+
+      // Get conversation history for context
+      const history = await storage.getMessages(userName, 20);
+      const conversationHistory = history.map(msg => ({
+        content: msg.content,
+        isUser: msg.isUser
+      }));
+
+      // Analyze mood and generate response
+      const moodAnalysis = await analyzeMood(content);
+      const botResponse = await generateResponse(
+        content, 
+        conversationHistory, 
+        moodAnalysis
+      );
+
+      // Store bot response
+      await storage.createMessage({
+        content: botResponse,
+        isUser: false,
+        mood: moodAnalysis.mood,
+        userName: 'Tsie Masilo Bot'
+      });
+
+      // Return the response
+      res.json({
+        response: botResponse,
+        mood: moodAnalysis.mood
+      });
+    } catch (error) {
+      console.error('Chat error:', error);
+      res.status(500).json({ error: 'Internal server error' });
     }
   });
 
