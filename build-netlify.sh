@@ -16,6 +16,13 @@ npx vite build
 echo "Building Netlify functions..."
 mkdir -p dist/functions
 
+# Create CommonJS package.json for functions
+cat > dist/functions/package.json << 'EOF'
+{
+  "type": "commonjs"
+}
+EOF
+
 # Build services first
 if [ -d "src/functions/services" ]; then
     echo "Building services..."
