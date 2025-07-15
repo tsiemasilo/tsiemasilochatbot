@@ -23,11 +23,9 @@ cat > dist/functions/package.json << 'EOF'
 }
 EOF
 
-# Build services first
+# Build services first - these are included in the function bundles
 if [ -d "src/functions/services" ]; then
-    echo "Building services..."
-    mkdir -p dist/functions/services
-    npx esbuild src/functions/services/openai.ts --platform=node --bundle --format=cjs --outfile=dist/functions/services/openai.js --external:@neondatabase/serverless --external:ws --external:openai --external:@anthropic-ai/sdk
+    echo "Services will be bundled with functions..."
 fi
 
 # Compile each function individually with CommonJS format
@@ -35,7 +33,7 @@ for func in src/functions/*.ts; do
     if [ -f "$func" ]; then
         funcname=$(basename "$func" .ts)
         echo "Building function: $funcname"
-        npx esbuild "$func" --platform=node --bundle --format=cjs --outfile="dist/functions/$funcname.js" --external:@neondatabase/serverless --external:ws --external:openai --external:@anthropic-ai/sdk --external:drizzle-orm --external:drizzle-zod
+        npx esbuild "$func" --platform=node --bundle --format=cjs --outfile="dist/functions/$funcname.js" --external:@neondatabase/serverless --external:ws --external:openai --external:@anthropic-ai/sdk --external:drizzle-orm --external:drizzle-zod --external:zod
     fi
 done
 
