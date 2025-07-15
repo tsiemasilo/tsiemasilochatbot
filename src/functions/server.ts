@@ -11,7 +11,7 @@ const server = createServer(app);
 registerRoutes(app);
 
 // Convert Express app to Netlify function
-const handler = serverless(app);
+const serverlessHandler = serverless(app);
 
 export const handler: Handler = async (event, context) => {
   // Handle CORS for preflight requests
@@ -27,5 +27,5 @@ export const handler: Handler = async (event, context) => {
     };
   }
 
-  return handler(event, context);
+  return serverlessHandler(event, context);
 };
