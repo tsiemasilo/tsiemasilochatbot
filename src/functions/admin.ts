@@ -8,7 +8,7 @@ import { messages, users } from '../../shared/schema';
 const pool = new Pool({ 
   connectionString: process.env.DATABASE_URL || process.env.NETLIFY_DATABASE_URL
 });
-const db = drizzle(pool);
+const db = drizzle(pool, { schema: { messages, users } });
 
 export const handler: Handler = async (event, context) => {
   // Set CORS headers
