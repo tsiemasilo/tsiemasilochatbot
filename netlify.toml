@@ -5,8 +5,6 @@
 
 [build.environment]
   NODE_VERSION = "18"
-  DATABASE_URL = "postgresql://neondb_owner:npg_I9syPbvXdK8W@ep-restless-recipe-aeshfl0e-pooler.c-2.us-east-2.aws.neon.tech/neondb?sslmode=require"
-  OPENAI_API_KEY = "your_openai_api_key_here"
 
 [[redirects]]
   from = "/api/chat"
