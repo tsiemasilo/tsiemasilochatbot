@@ -1,73 +1,92 @@
 import { Handler } from '@netlify/functions';
 import { Pool } from '@neondatabase/serverless';
+import { drizzle } from 'drizzle-orm/neon-serverless';
+import { eq, desc } from 'drizzle-orm';
+import { messages } from '../../shared/schema';
 
-// Database connection - use Netlify environment variables
-const DATABASE_URL = process.env.NETLIFY_DATABASE_URL || process.env.DATABASE_URL;
-const pool = new Pool({
-  connectionString: DATABASE_URL,
+// Database connection for Netlify
+const pool = new Pool({ 
+  connectionString: process.env.DATABASE_URL
 });
+const db = drizzle(pool);
 
 export const handler: Handler = async (event, context) => {
-  // Enable CORS
+  // Set CORS headers
   const headers = {
     'Access-Control-Allow-Origin': '*',
-    'Access-Control-Allow-Headers': 'Content-Type',
+    'Access-Control-Allow-Headers': 'Content-Type, Authorization',
     'Access-Control-Allow-Methods': 'GET, OPTIONS',
-    'Content-Type': 'application/json',
+    'Content-Type': 'application/json'
   };
 
+  // Handle preflight OPTIONS request
   if (event.httpMethod === 'OPTIONS') {
-    return { statusCode: 200, headers };
+    return {
+      statusCode: 200,
+      headers,
+      body: ''
+    };
   }
 
-  try {
-    if (event.httpMethod === 'GET') {
-      // Get userName from query parameters
-      const userName = event.queryStringParameters?.userName;
-      
-      if (!userName) {
-        return {
-          statusCode: 400,
-          headers,
-          body: JSON.stringify({ error: 'userName parameter is required' }),
-        };
-      }
-
-      // Get messages for specific user
-      const result = await pool.query(`
-        SELECT id, content, is_user, timestamp, mood, user_name
-        FROM messages 
-        WHERE user_name = $1 
-        ORDER BY timestamp ASC
-      `, [userName]);
-
-      const messages = result.rows.map(row => ({
-        id: row.id,
-        content: row.content,
-        isUser: row.is_user,
-        timestamp: row.timestamp,
-        mood: row.mood,
-        userName: row.user_name
-      }));
-
-      return {
-        statusCode: 200,
-        headers,
-        body: JSON.stringify(messages),
-      };
-    }
-
+  // Only allow GET method
+  if (event.httpMethod !== 'GET') {
     return {
       statusCode: 405,
       headers,
-      body: JSON.stringify({ error: 'Method not allowed' }),
+      body: JSON.stringify({ error: 'Method not allowed' })
     };
+  }
+
+  try {
+    // Extract userName from query parameters or path
+    let userName: string;
+    
+    if (event.queryStringParameters?.userName) {
+      userName = event.queryStringParameters.userName;
+    } else {
+      const pathSegments = event.path.split('/');
+      userName = pathSegments[pathSegments.length - 1];
+    }
+
+    if (!userName || userName === 'admin-messages') {
+      return {
+        statusCode: 400,
+        headers,
+        body: JSON.stringify({ error: 'Missing userName parameter' })
+      };
+    }
+
+    console.log(`[Netlify Admin Messages] Loading messages for user: ${userName}`);
+
+    // Get user's message history
+    const userMessages = await db
+      .select()
+      .from(messages)
+      .where(eq(messages.userName, userName))
+      .orderBy(desc(messages.timestamp))
+      .limit(200);
+
+    // Return messages in chronological order
+    const sortedMessages = userMessages.reverse();
+    
+    console.log(`[Netlify Admin Messages] Retrieved ${sortedMessages.length} messages for ${userName}`);
+
+    return {
+      statusCode: 200,
+      headers,
+      body: JSON.stringify(sortedMessages)
+    };
+
   } catch (error) {
-    console.error('Admin messages API error:', error);
+    console.error('[Netlify Admin Messages] Error:', error);
+    
     return {
       statusCode: 500,
       headers,
-      body: JSON.stringify({ error: 'Internal server error' }),
+      body: JSON.stringify({
+        error: 'Internal server error',
+        message: error instanceof Error ? error.message : 'Unknown error'
+      })
     };
   }
 };
