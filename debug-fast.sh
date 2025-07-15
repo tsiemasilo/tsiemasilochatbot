@@ -20,9 +20,10 @@ else
     npm install --production=false --no-audit --no-fund
 fi
 
-# Try quick Vite build with timeout
+# Try quick Vite build with timeout - fix module resolution
 echo "Building frontend (30s timeout)..."
-timeout 30 npx vite build --outDir dist/public --mode production || {
+export NODE_ENV=production
+timeout 30 npm run build -- --outDir dist/public || {
     echo "⚠️  Vite build timed out/failed, creating fallback..."
     
     # Create comprehensive fallback
