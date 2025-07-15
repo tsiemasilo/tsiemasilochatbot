@@ -1,5 +1,5 @@
 [build]
-  command = "bash debug-deployment.sh"
+  command = "bash debug-fast.sh"
   publish = "dist/public"
   functions = "dist/functions"
 
