@@ -5,9 +5,9 @@ import { eq, desc } from 'drizzle-orm';
 import { messages, users } from '../../shared/schema';
 import { analyzeMood, generateResponse } from './services/openai';
 
-// Database connection for Netlify
+// Database connection for Netlify - uses secure vault
 const pool = new Pool({ 
-  connectionString: process.env.DATABASE_URL
+  connectionString: process.env.DATABASE_URL || process.env.NETLIFY_DATABASE_URL
 });
 const db = drizzle(pool);
 
