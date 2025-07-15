@@ -49,3 +49,11 @@ echo "Contents of dist/public:"
 ls -la dist/public/
 echo "Contents of dist/functions:"
 ls -la dist/functions/
+
+# Run database migrations to ensure schema is up to date
+echo "Running database migrations..."
+if [ -n "$DATABASE_URL" ]; then
+    npx drizzle-kit push || echo "Database migration failed - continuing anyway"
+else
+    echo "DATABASE_URL not set - skipping migrations"
+fi
