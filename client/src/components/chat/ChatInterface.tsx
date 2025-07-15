@@ -105,6 +105,12 @@ export function ChatInterface() {
     
     try {
       setIsRequestingPermission(true);
+      
+      // Check if getUserMedia is available
+      if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+        throw new Error('getUserMedia is not supported in this browser');
+      }
+      
       const stream = await navigator.mediaDevices.getUserMedia({ 
         audio: { 
           echoCancellation: true,
@@ -122,6 +128,16 @@ export function ChatInterface() {
       console.error('Microphone permission denied:', error);
       setMicPermissionGranted(false);
       setPermissionRequested(true);
+      
+      // Show user-friendly error message
+      if (error.name === 'NotAllowedError') {
+        alert('Microphone access was denied. Please enable microphone access in your browser settings and try again.');
+      } else if (error.name === 'NotFoundError') {
+        alert('No microphone found. Please connect a microphone and try again.');
+      } else {
+        alert('Unable to access microphone. Please check your browser settings and try again.');
+      }
+      
       return false;
     } finally {
       setIsRequestingPermission(false);
@@ -141,19 +157,14 @@ export function ChatInterface() {
     setIsButtonPressed(true);
     
     try {
-      // If we don't have permission yet, request it first
-      if (!micPermissionGranted && !permissionRequested) {
-        console.log('Need to request permission first');
+      // Always try to get permission if we don't have it
+      if (!micPermissionGranted) {
+        console.log('Requesting microphone permission');
         const granted = await ensureMicPermission();
         if (!granted) {
-          alert('Microphone permission is required for voice messages.');
           setIsButtonPressed(false);
           return;
         }
-        // Don't start recording after permission - user needs to press again
-        console.log('Permission granted, please press and hold again to record');
-        setIsButtonPressed(false);
-        return;
       }
       
       // If we have permission and not already recording, start recording
@@ -293,7 +304,15 @@ export function ChatInterface() {
     } catch (error) {
       console.error('Error accessing microphone:', error);
       setMicPermissionGranted(false);
-      alert('Unable to access microphone. Please check your permissions.');
+      
+      // Show user-friendly error message
+      if (error.name === 'NotAllowedError') {
+        alert('Microphone access was denied. Please enable microphone access in your browser settings and try again.');
+      } else if (error.name === 'NotFoundError') {
+        alert('No microphone found. Please connect a microphone and try again.');
+      } else {
+        alert('Unable to access microphone. Please check your browser settings and try again.');
+      }
     }
   };
 
