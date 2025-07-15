@@ -80,28 +80,29 @@ export function useWebSocket() {
     if (isNetlify) {
       // For Netlify, use HTTP API directly
       try {
+        // Add user message immediately
+        setMessages(prev => [...prev, {
+          content,
+          isUser: true,
+          timestamp: new Date()
+        }]);
+        
+        // Show typing indicator
+        setIsTyping(true);
+        
         const response = await fetch('/.netlify/functions/chat', {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
           },
           body: JSON.stringify({
-            message: content,
+            content: content,
             userName: userName || 'Anonymous'
           })
         });
         
         if (response.ok) {
           const data = await response.json();
-          // Add user message
-          setMessages(prev => [...prev, {
-            content,
-            isUser: true,
-            timestamp: new Date()
-          }]);
-          
-          // Show typing indicator
-          setIsTyping(true);
           
           // Add bot response after a delay
           setTimeout(() => {
@@ -112,9 +113,13 @@ export function useWebSocket() {
             }]);
             setIsTyping(false);
           }, 1000);
+        } else {
+          console.error('Failed to send message:', response.status);
+          setIsTyping(false);
         }
       } catch (error) {
         console.error('Error sending message:', error);
+        setIsTyping(false);
       }
     } else if (wsRef.current && wsRef.current.readyState === WebSocket.OPEN) {
       // For local development, use WebSocket
