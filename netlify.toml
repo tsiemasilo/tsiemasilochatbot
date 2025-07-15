@@ -1,5 +1,5 @@
 [build]
-  command = "bash debug-fast.sh"
+  command = "npm run build"
   publish = "dist/public"
   functions = "dist/functions"
 
