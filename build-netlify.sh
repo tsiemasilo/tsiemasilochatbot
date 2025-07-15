@@ -12,9 +12,51 @@ npm install --include=dev
 echo "Building React frontend..."
 npx vite build
 
-# Build the serverless function
-echo "Building serverless function..."
-npx esbuild server/index.ts --platform=node --packages=external --bundle --format=esm --outdir=dist
+# Build Netlify functions with proper CommonJS format
+echo "Building Netlify functions..."
+mkdir -p dist/functions
+
+# Build services first
+if [ -d "src/functions/services" ]; then
+    echo "Building services..."
+    mkdir -p dist/functions/services
+    npx esbuild src/functions/services/openai.ts --platform=node --bundle --format=cjs --outfile=dist/functions/services/openai.js --external:@neondatabase/serverless --external:ws --external:openai --external:@anthropic-ai/sdk
+fi
+
+# Compile each function individually with CommonJS format
+for func in src/functions/*.ts; do
+    if [ -f "$func" ]; then
+        funcname=$(basename "$func" .ts)
+        echo "Building function: $funcname"
+        npx esbuild "$func" --platform=node --bundle --format=cjs --outfile="dist/functions/$funcname.js" --external:@neondatabase/serverless --external:ws --external:openai --external:@anthropic-ai/sdk --external:drizzle-orm --external:drizzle-zod
+    fi
+done
+
+# Create a simple test function to verify deployment
+echo "Creating test function..."
+cat > dist/functions/test.js << 'EOF'
+exports.handler = async (event, context) => {
+  return {
+    statusCode: 200,
+    headers: {
+      'Content-Type': 'application/json',
+      'Access-Control-Allow-Origin': '*',
+    },
+    body: JSON.stringify({
+      message: 'Netlify functions are working!',
+      timestamp: new Date().toISOString(),
+      method: event.httpMethod,
+      path: event.path
+    })
+  };
+};
+EOF
+
+# Copy shared schema for functions
+if [ -d "shared" ]; then
+    echo "Copying shared schema..."
+    cp -r shared dist/
+fi
 
 # Copy redirects
 echo "Copying redirects..."
@@ -23,4 +65,5 @@ cp _redirects dist/public/
 echo "✅ Build completed successfully!"
 echo "Files created:"
 ls -la dist/public/
-ls -la dist/
+ls -la dist/functions/
+echo "Test function created for verification"
