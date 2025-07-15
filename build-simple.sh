@@ -9,14 +9,18 @@ echo "Creating build directories..."
 mkdir -p dist/public
 mkdir -p dist/functions
 
-# Install dependencies with timeout
+# Install dependencies with timeout - fix lock file sync issue
 echo "Installing dependencies..."
-timeout 120 npm ci --production=false || {
-    echo "npm install timed out, trying with cache clean..."
+echo "Fixing package-lock.json sync issue..."
+timeout 180 npm install --production=false || {
+    echo "npm install failed, trying with cache clean..."
     npm cache clean --force
-    timeout 60 npm ci --production=false || {
-        echo "npm install failed, trying basic install..."
-        npm install --production=false
+    timeout 120 npm install --production=false || {
+        echo "npm install with cache clean failed, trying ci..."
+        timeout 60 npm ci --production=false || {
+            echo "All npm install methods failed, creating minimal fallback..."
+            npm install --no-package-lock --production=false
+        }
     }
 }
 
