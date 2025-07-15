@@ -1,59 +1,26 @@
 #!/bin/bash
 set -e
 
-echo "Starting Netlify build process..."
+echo "=== NETLIFY BUILD FOR TSIE MASILO BOT ==="
+echo "$(date): Starting build with proper dependencies"
 
-# Install dependencies
-echo "Installing dependencies..."
-npm install --production=false
+# Install all dependencies including dev dependencies
+echo "Installing all dependencies..."
+npm install --include=dev
 
-# Create directories
-echo "Creating build directories..."
-mkdir -p dist/public
-mkdir -p dist/functions
+# Build the React frontend
+echo "Building React frontend..."
+npx vite build
 
-# Build frontend
-echo "Building frontend with Vite..."
-npx vite build --outDir dist/public
-
-# Copy static files
-echo "Copying static files..."
-if [ -f "_redirects" ]; then
-    cp _redirects dist/public/
-    echo "_redirects file copied"
-else
-    echo "Warning: _redirects file not found"
-fi
-
-if [ -f "client/public/favicon.ico" ]; then
-    cp client/public/favicon.ico dist/public/
-    echo "favicon.ico copied"
-fi
-
-if [ -f "client/public/favicon.svg" ]; then
-    cp client/public/favicon.svg dist/public/
-    echo "favicon.svg copied"
-fi
-
-# Build serverless function
+# Build the serverless function
 echo "Building serverless function..."
-npx esbuild src/functions/server.ts \
-    --platform=node \
-    --packages=external \
-    --bundle \
-    --format=esm \
-    --outfile=dist/functions/server.js
+npx esbuild server/index.ts --platform=node --packages=external --bundle --format=esm --outdir=dist
 
-echo "Build completed successfully!"
-echo "Contents of dist/public:"
+# Copy redirects
+echo "Copying redirects..."
+cp _redirects dist/public/
+
+echo "✅ Build completed successfully!"
+echo "Files created:"
 ls -la dist/public/
-echo "Contents of dist/functions:"
-ls -la dist/functions/
-
-# Run database migrations to ensure schema is up to date
-echo "Running database migrations..."
-if [ -n "$DATABASE_URL" ]; then
-    npx drizzle-kit push || echo "Database migration failed - continuing anyway"
-else
-    echo "DATABASE_URL not set - skipping migrations"
-fi
+ls -la dist/
