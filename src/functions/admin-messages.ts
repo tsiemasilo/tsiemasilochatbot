@@ -1,14 +1,19 @@
 import { Handler } from '@netlify/functions';
-import { Pool } from '@neondatabase/serverless';
+import { Pool, neonConfig } from '@neondatabase/serverless';
 import { drizzle } from 'drizzle-orm/neon-serverless';
 import { eq, desc } from 'drizzle-orm';
 import { messages } from '../../shared/schema';
+import ws from "ws";
 
-// Database connection for Netlify - uses secure vault
+// Configure WebSocket for Neon
+neonConfig.webSocketConstructor = ws;
+
+// Database connection for Netlify - uses production database
+const PRODUCTION_DB_URL = "postgresql://neondb_owner:npg_KrvFQYfFIEHuSqnQKTqGLaVNRdUTULmP@ep-billowing-mud-a5d6fmj1.us-east-2.aws.neon.tech/neondb?sslmode=require";
 const pool = new Pool({ 
-  connectionString: process.env.DATABASE_URL || process.env.NETLIFY_DATABASE_URL
+  connectionString: process.env.DATABASE_URL || PRODUCTION_DB_URL
 });
-const db = drizzle(pool);
+const db = drizzle(pool, { schema: { messages, users } });
 
 export const handler: Handler = async (event, context) => {
   // Set CORS headers
