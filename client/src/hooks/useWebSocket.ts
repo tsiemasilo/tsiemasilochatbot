@@ -168,7 +168,7 @@ export function useWebSocket() {
               setIsTyping(false);
             }, 1000);
           } else {
-            console.error('Failed to send message:', response.status);
+            console.error('Failed to send message:', response.status, await response.text());
             setIsTyping(false);
           }
         }
