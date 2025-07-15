@@ -1,9 +1,13 @@
 import { Handler } from '@netlify/functions';
-import { Pool } from '@neondatabase/serverless';
+import { Pool, neonConfig } from '@neondatabase/serverless';
 import { drizzle } from 'drizzle-orm/neon-serverless';
 import { eq, desc } from 'drizzle-orm';
 import { messages, users } from '../../shared/schema';
 import OpenAI from "openai";
+import ws from "ws";
+
+// Configure WebSocket for Neon
+neonConfig.webSocketConstructor = ws;
 
 // OpenAI service embedded directly in function
 const openai = new OpenAI({
@@ -187,9 +191,10 @@ function getMaxTokens(engagement: EngagementAnalysis): number {
   return tokenLimits[engagement.responseStyle];
 }
 
-// Database connection for Netlify - uses secure vault
+// Database connection for Netlify - uses production database
+const PRODUCTION_DB_URL = "postgresql://neondb_owner:npg_KrvFQYfFIEHuSqnQKTqGLaVNRdUTULmP@ep-billowing-mud-a5d6fmj1.us-east-2.aws.neon.tech/neondb?sslmode=require";
 const pool = new Pool({ 
-  connectionString: process.env.DATABASE_URL || process.env.NETLIFY_DATABASE_URL
+  connectionString: process.env.DATABASE_URL || PRODUCTION_DB_URL
 });
 const db = drizzle(pool, { schema: { messages, users } });
 
