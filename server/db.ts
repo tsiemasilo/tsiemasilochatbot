@@ -13,10 +13,8 @@ import * as schema from "@shared/schema";
 // Configure Neon to use WebSocket for serverless environments
 neonConfig.webSocketConstructor = ws;
 
-// Database connection string - prioritize Netlify environment variables
-const DATABASE_URL = process.env.NETLIFY_DATABASE_URL || 
-                    process.env.DATABASE_URL || 
-                    'postgresql://neondb_owner:npg_I9syPbvXdK8W@ep-restless-recipe-aeshfl0e-pooler.c-2.us-east-2.aws.neon.tech/neondb?sslmode=require';
+// Database connection string - use single DATABASE_URL variable
+const DATABASE_URL = process.env.DATABASE_URL;
 
 // Validate database URL is available
 if (!DATABASE_URL) {
