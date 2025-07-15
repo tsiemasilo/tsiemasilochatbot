@@ -9,6 +9,26 @@
   NETLIFY_DATABASE_URL_UNPOOLED = "postgresql://neondb_owner:npg_I9syPbvXdK8W@ep-restless-recipe-aeshfl0e.c-2.us-east-2.aws.neon.tech/neondb?sslmode=require"
 
 [[redirects]]
+  from = "/api/chat"
+  to = "/.netlify/functions/chat"
+  status = 200
+
+[[redirects]]
+  from = "/api/messages"
+  to = "/.netlify/functions/messages"
+  status = 200
+
+[[redirects]]
+  from = "/api/admin/contacts"
+  to = "/.netlify/functions/admin"
+  status = 200
+
+[[redirects]]
+  from = "/api/admin/messages/*"
+  to = "/.netlify/functions/admin-messages"
+  status = 200
+
+[[redirects]]
   from = "/api/*"
   to = "/.netlify/functions/server/:splat"
   status = 200
