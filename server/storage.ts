@@ -177,15 +177,20 @@ export class DatabaseStorage implements IStorage {
       if (existingMessages.length === 0) {
         // Add initial welcome message if database is empty
         await db.insert(messages).values({
-          content: "Hey! I'm Tsie Masilo Bot 👋 Let's chat!",
+          content: "Welcome to Tsie Masilo Bot! 👋 I'm here to help you with anything you need. Feel free to ask me questions, share your thoughts, or just have a friendly chat. I can adapt to your mood and provide responses that match your communication style. How can I assist you today?",
           isUser: false,
           userName: "System",
           timestamp: new Date(),
-          mood: null
+          mood: "supportive"
         });
+        console.log('✅ Welcome message added to database');
       }
     } catch (error) {
-      console.error('Error ensuring welcome message:', error);
+      console.error('❌ Error ensuring welcome message:', error);
+      // If it's a column issue, the database schema might be out of sync
+      if (error.code === '42703') {
+        console.error('Database schema appears to be out of sync. Please run database migrations.');
+      }
     }
   }
 
