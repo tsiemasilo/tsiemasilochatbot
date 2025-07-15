@@ -121,21 +121,61 @@ export function useWebSocket() {
         console.error('Error sending message:', error);
         setIsTyping(false);
       }
-    } else if (wsRef.current && wsRef.current.readyState === WebSocket.OPEN) {
-      // For local development, use WebSocket
-      wsRef.current.send(JSON.stringify({
-        type: 'message',
-        content,
-        isUser: true,
-        userName: userName || 'Anonymous'
-      }));
-      
-      // Add user message to local state immediately
-      setMessages(prev => [...prev, {
-        content,
-        isUser: true,
-        timestamp: new Date()
-      }]);
+    } else {
+      // For local development, use HTTP API as fallback if WebSocket fails
+      try {
+        // Add user message immediately
+        setMessages(prev => [...prev, {
+          content,
+          isUser: true,
+          timestamp: new Date()
+        }]);
+        
+        // Show typing indicator
+        setIsTyping(true);
+        
+        // Try WebSocket first, fallback to HTTP
+        if (wsRef.current && wsRef.current.readyState === WebSocket.OPEN) {
+          wsRef.current.send(JSON.stringify({
+            type: 'message',
+            content,
+            isUser: true,
+            userName: userName || 'Anonymous'
+          }));
+        } else {
+          // Fallback to HTTP API
+          const response = await fetch('/api/chat', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+              content: content,
+              userName: userName || 'Anonymous'
+            })
+          });
+          
+          if (response.ok) {
+            const data = await response.json();
+            
+            // Add bot response after a delay
+            setTimeout(() => {
+              setMessages(prev => [...prev, {
+                content: data.response,
+                isUser: false,
+                timestamp: new Date()
+              }]);
+              setIsTyping(false);
+            }, 1000);
+          } else {
+            console.error('Failed to send message:', response.status);
+            setIsTyping(false);
+          }
+        }
+      } catch (error) {
+        console.error('Error sending message:', error);
+        setIsTyping(false);
+      }
     }
   };
 
