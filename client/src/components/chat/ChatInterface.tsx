@@ -278,11 +278,12 @@ export function ChatInterface() {
 
       mediaRecorder.onstop = async () => {
         const actualRecordingTime = Math.floor((Date.now() - recordingStartTimeRef.current) / 1000);
+        console.log('=== RECORDING STOPPED ===');
         console.log('Recording stopped, chunks:', audioChunksRef.current.length, 'actual time:', actualRecordingTime);
         
         // Check if recording was at least 1 second long
         if (actualRecordingTime < 1) {
-          console.log('Recording too short, canceling voice message');
+          console.log('❌ Recording too short, canceling voice message');
           stream.getTracks().forEach(track => track.stop());
           setRecordingTime(0);
           isRecordingRef.current = false;
@@ -300,17 +301,18 @@ export function ChatInterface() {
           const mimeType = mediaRecorder.mimeType || 'audio/webm';
           const audioBlob = new Blob(audioChunksRef.current, { type: mimeType });
           
-          console.log('Audio blob size:', audioBlob.size, 'bytes');
+          console.log('✓ Audio blob created - size:', audioBlob.size, 'bytes, type:', mimeType);
           
           // Only send if we have a reasonable audio size
           if (audioBlob.size > 100) {
-            console.log('Sending voice message...');
+            console.log('📤 Calling sendVoiceMessage...');
             await sendVoiceMessage(audioBlob);
+            console.log('✓ sendVoiceMessage completed');
           } else {
-            console.log('Audio blob too small, not sending');
+            console.log('❌ Audio blob too small, not sending');
           }
         } else {
-          console.log('Not sending voice message - no audio chunks captured');
+          console.log('❌ Not sending voice message - no audio chunks captured');
         }
         
         stream.getTracks().forEach(track => track.stop());
@@ -322,6 +324,8 @@ export function ChatInterface() {
           clearInterval(recordingTimerRef.current);
           recordingTimerRef.current = null;
         }
+        
+        console.log('=== RECORDING CLEANUP COMPLETE ===');
       };
 
       mediaRecorder.start(1000); // Collect data every 1 second
@@ -367,24 +371,53 @@ export function ChatInterface() {
 
   const sendVoiceMessage = async (audioBlob: Blob) => {
     try {
+      console.log('=== VOICE MESSAGE DEBUG ===');
       console.log('sendVoiceMessage called with blob size:', audioBlob.size);
+      console.log('Current userName:', userName);
+      console.log('WebSocket state:', wsRef.current?.readyState);
+      console.log('Recording start time:', recordingStartTimeRef.current);
       
       // Use the actual recording time
       const actualTime = Math.floor((Date.now() - recordingStartTimeRef.current) / 1000);
       const voiceNoteMessage = `🎤 Voice message (${actualTime}s)`;
-      console.log('Sending voice note message:', voiceNoteMessage);
+      console.log('Voice note message to send:', voiceNoteMessage);
       
       // First send the voice note message to chat
       if (wsRef.current && wsRef.current.readyState === WebSocket.OPEN) {
-        wsRef.current.send(JSON.stringify({
+        const messagePayload = {
           type: 'message',
           content: voiceNoteMessage,
           isUser: true,
           userName: userName
-        }));
-        console.log('Voice note message sent to chat');
+        };
+        console.log('Sending WebSocket message:', messagePayload);
+        wsRef.current.send(JSON.stringify(messagePayload));
+        console.log('✓ Voice note message sent to WebSocket');
       } else {
-        console.log('WebSocket not ready, state:', wsRef.current?.readyState);
+        console.error('❌ WebSocket not ready, state:', wsRef.current?.readyState);
+        // If WebSocket is not ready, let's try to send via HTTP API as fallback
+        try {
+          console.log('Attempting HTTP API fallback...');
+          const response = await fetch('/api/messages', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+              content: voiceNoteMessage,
+              isUser: true,
+              userName: userName
+            })
+          });
+          
+          if (response.ok) {
+            console.log('✓ Voice message sent via HTTP API');
+          } else {
+            console.error('❌ HTTP API failed:', response.status);
+          }
+        } catch (httpError) {
+          console.error('❌ HTTP API error:', httpError);
+        }
       }
 
       // Show typing indicator while processing transcription
@@ -399,6 +432,7 @@ export function ChatInterface() {
                            audioBlob.type.includes('ogg') ? 'ogg' : 'webm';
       formData.append('audio', audioBlob, `voice_message.${fileExtension}`);
 
+      console.log('Attempting audio transcription...');
       const response = await fetch('/api/transcribe', {
         method: 'POST',
         body: formData,
@@ -406,6 +440,7 @@ export function ChatInterface() {
 
       if (response.ok) {
         const { text } = await response.json();
+        console.log('Transcription result:', text);
         if (text?.trim()) {
           // Send transcribed text to WebSocket for AI processing
           if (wsRef.current && wsRef.current.readyState === WebSocket.OPEN) {
@@ -414,15 +449,17 @@ export function ChatInterface() {
               content: text,
               userName: userName
             }));
+            console.log('✓ Voice transcription sent for AI processing');
           }
         } else {
+          console.log('Empty transcription, stopping typing indicator');
           // Stop typing indicator if transcription is empty
           if (wsRef.current && wsRef.current.readyState === WebSocket.OPEN) {
             wsRef.current.send(JSON.stringify({ type: 'stop_typing' }));
           }
         }
       } else {
-        console.error('Failed to transcribe audio');
+        console.error('❌ Failed to transcribe audio, status:', response.status);
         // Stop typing indicator on error but don't show error message
         if (wsRef.current && wsRef.current.readyState === WebSocket.OPEN) {
           wsRef.current.send(JSON.stringify({ type: 'stop_typing' }));
