@@ -96,6 +96,44 @@ Preferred communication style: Simple, everyday language.
 
 ### Recent Changes (July 2025)
 
+#### Mobile Voice Recording Fixes (July 16, 2025)
+- **Issue**: Text selection interfered with voice recording on mobile devices
+- **Solution**: Added comprehensive CSS rules to prevent text selection during recording
+- **Mobile Touch Handling**: 
+  - Added `touch-action: none` and user-select prevention for voice button
+  - Implemented recording-active class that disables pointer events globally
+  - Voice button remains interactive while recording is active
+- **Voice Message Flow Fix**:
+  - Changed voice note messages to use "voice_note" type instead of "message"
+  - AI no longer responds to "🎤 Voice message (3s)" indicators
+  - AI only responds to actual transcribed speech content
+- **Netlify Functions Updated**:
+  - Chat function now handles voice_note type separately (stores but doesn't trigger AI)
+  - Updated useWebSocket hook to send voice notes correctly to Netlify
+  - Fixed message type handling for both platforms
+- **iPhone 12 Pro Dimensions**: Enforced exact 390×844px viewport constraints
+- **Status**: All changes pushed to GitHub, deployment triggered automatically
+
+#### Mobile Optimization for iPhone 12 Pro (July 16, 2025)
+- **Target Device**: iPhone 12 Pro with 390 × 844 px viewport (portrait), 844 × 390 px (landscape)
+- **Device Pixel Ratio**: 3 (each CSS pixel = 3×3 physical pixels)
+- **Mobile-First CSS**: Added comprehensive mobile optimizations in index.css
+- **Responsive Components**: Updated ChatInterface and MessageBubble with mobile-optimized classes
+- **Touch-Friendly Design**: All buttons now meet 44px minimum touch target size
+- **iOS Optimizations**:
+  - Added viewport meta tag with user-scalable=no and viewport-fit=cover
+  - Implemented Apple web app meta tags for standalone app experience
+  - Added -webkit-overflow-scrolling: touch for smooth scrolling
+  - Prevented zoom on input focus with 16px font size
+  - Added high DPR font smoothing for crisp text
+- **Dynamic Viewport Height**: Uses 100dvh for better mobile browser compatibility
+- **Voice Recording**: Mobile-optimized overlay with fixed positioning for better UX
+- **Landscape Support**: Specific CSS rules for landscape orientation (844×390px)
+- **Repository**: All mobile optimizations pushed to GitHub for Netlify deployment
+- **Status**: Ready for mobile-first deployment with professional iPhone 12 Pro experience
+
+### Recent Changes (July 2025)
+
 #### Missing UI Components Fix - Badge Component (July 16, 2025)
 - **Issue**: Netlify build failing with "Could not load badge.tsx" - missing shadcn/ui component
 - **Solution**: Added complete badge.tsx component with proper variants and TypeScript support
