@@ -13,8 +13,8 @@ import * as schema from "@shared/schema";
 // Configure Neon to use WebSocket for serverless environments
 neonConfig.webSocketConstructor = ws;
 
-// Database connection string - use single DATABASE_URL variable
-const DATABASE_URL = process.env.DATABASE_URL;
+// Database connection string - uses Replit environment variables
+const DATABASE_URL = process.env.DATABASE_URL || "postgresql://neondb_owner:npg_E3Jn8cxsglWG@ep-round-brook-a5e3k093.us-east-2.aws.neon.tech/neondb?sslmode=require";
 
 // Validate database URL is available
 if (!DATABASE_URL) {
