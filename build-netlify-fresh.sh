@@ -11,11 +11,13 @@ rm -rf .vite
 
 # Install dependencies
 echo "Installing dependencies..."
-npm install
+# Install all dependencies including devDependencies for build
+NODE_ENV=development npm install
 
 # Build the React frontend
 echo "Building React frontend..."
-npm run build
+# Use npx to ensure vite is available
+npx vite build && npx esbuild server/index.ts --platform=node --packages=external --bundle --format=esm --outdir=dist
 
 # Verify the build worked
 echo "Verifying build..."
