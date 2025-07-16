@@ -382,15 +382,15 @@ export function ChatInterface() {
       const voiceNoteMessage = `🎤 Voice message (${actualTime}s)`;
       console.log('Voice note message to send:', voiceNoteMessage);
       
-      // First send the voice note message to chat
+      // First send the voice note message to chat using voice_note type (won't trigger AI response)
       if (wsRef.current && wsRef.current.readyState === WebSocket.OPEN) {
         const messagePayload = {
-          type: 'message',
+          type: 'voice_note',
           content: voiceNoteMessage,
           isUser: true,
           userName: userName
         };
-        console.log('Sending WebSocket message:', messagePayload);
+        console.log('Sending WebSocket voice note message:', messagePayload);
         wsRef.current.send(JSON.stringify(messagePayload));
         console.log('✓ Voice note message sent to WebSocket');
       } else {
