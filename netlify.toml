@@ -1,13 +1,11 @@
 [build]
-  command = "bash build-netlify-fresh.sh"
+  command = "bash build-netlify.sh"
   publish = "dist/public"
   functions = "dist/functions"
 
 [build.environment]
   NODE_VERSION = "18"
-  NODE_ENV = "production"
 
-# API redirects for serverless functions
 [[redirects]]
   from = "/api/chat"
   to = "/.netlify/functions/chat"
@@ -19,7 +17,7 @@
   status = 200
 
 [[redirects]]
-  from = "/api/contacts"
+  from = "/api/admin/contacts"
   to = "/.netlify/functions/admin"
   status = 200
 
@@ -28,8 +26,21 @@
   to = "/.netlify/functions/admin-messages"
   status = 200
 
-# Catch-all for SPA routing
+[[redirects]]
+  from = "/api/*"
+  to = "/.netlify/functions/server/:splat"
+  status = 200
+
+[[redirects]]
+  from = "/ws"
+  to = "/.netlify/functions/server"
+  status = 200
+
 [[redirects]]
   from = "/*"
   to = "/index.html"
   status = 200
+
+[functions]
+  directory = "dist/functions"
+  node_bundler = "esbuild"
