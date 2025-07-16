@@ -114,12 +114,18 @@ export async function registerRoutes(app: Express): Promise<Server> {
             isUser: false 
           });
         } else if (message.type === 'voice_note' && message.content) {
+          console.log('=== VOICE NOTE RECEIVED ===');
+          console.log('Voice note content:', message.content);
+          console.log('Voice note userName:', message.userName);
+          
           // Store voice note display message but don't trigger AI response
-          await storage.createMessage({
+          const storedVoiceNote = await storage.createMessage({
             content: message.content,
             isUser: true,
             userName: message.userName || 'Anonymous'
           });
+          
+          console.log('✓ Voice note stored with ID:', storedVoiceNote.id);
           
           // Broadcast to all clients
           broadcast({ 
@@ -127,6 +133,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
             content: message.content, 
             isUser: true 
           });
+          
+          console.log('✓ Voice note broadcasted to all clients');
         } else if (message.type === 'voice_transcription' && message.content) {
           // Process voice transcription for AI response only (don't store as user message)
           try {
