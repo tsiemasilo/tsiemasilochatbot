@@ -19,6 +19,7 @@ import { MessageBubble } from './MessageBubble';
 import { EmojiPicker } from './EmojiPicker';
 import { TypingIndicator } from './TypingIndicator';
 import { WelcomePrompt } from './WelcomePrompt';
+import { MobileVoiceRecording } from '@/components/mobile/MobileVoiceRecording';
 import { useChat } from '@/hooks/useChat';
 
 export function ChatInterface() {
@@ -380,6 +381,41 @@ export function ChatInterface() {
     }
   };
 
+  const sendVoiceNote = async (content: string) => {
+    try {
+      console.log('Sending voice note:', content);
+      
+      if (wsRef.current && wsRef.current.readyState === WebSocket.OPEN) {
+        const messagePayload = {
+          type: 'voice_note',
+          content: content,
+          isUser: true,
+          userName: userName
+        };
+        wsRef.current.send(JSON.stringify(messagePayload));
+      } else {
+        // HTTP fallback
+        const response = await fetch('/api/messages', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            content: content,
+            isUser: true,
+            userName: userName
+          })
+        });
+        
+        if (!response.ok) {
+          throw new Error('Failed to send voice note');
+        }
+      }
+    } catch (error) {
+      console.error('Error sending voice note:', error);
+    }
+  };
+
   const sendVoiceMessage = async (audioBlob: Blob) => {
     try {
       console.log('=== VOICE MESSAGE DEBUG ===');
@@ -580,19 +616,7 @@ export function ChatInterface() {
         "bg-gray-50 dark:bg-gray-800",
         "mobile-chat-input"
       )}>
-        {/* Recording indicator overlay - Fixed positioning */}
-        {isRecording && (
-          <div className="fixed inset-0 bg-red-500 bg-opacity-20 flex items-center justify-center z-50 mobile-voice-recording">
-            <div className="bg-red-500 text-white px-6 py-3 rounded-full flex items-center space-x-3 shadow-lg">
-              <div className="w-3 h-3 bg-white rounded-full animate-pulse"></div>
-              <span className="text-sm font-medium">Recording</span>
-              <span className="text-lg font-mono font-bold">
-                {Math.floor(recordingTime / 60)}:{(recordingTime % 60).toString().padStart(2, '0')}
-              </span>
-              <span className="text-xs opacity-75">Release to send</span>
-            </div>
-          </div>
-        )}
+  
         
         <div className="flex items-center space-x-2">
           <div className="relative">
@@ -624,61 +648,12 @@ export function ChatInterface() {
             disabled={isRecording}
           />
           
-          <Button
-            onPointerDown={(e) => {
-              e.preventDefault();
-              e.stopPropagation();
-              handleRecordingStart();
-            }}
-            onPointerUp={(e) => {
-              e.preventDefault();
-              e.stopPropagation();
-              handleRecordingStop();
-            }}
-            onPointerLeave={(e) => {
-              e.preventDefault();
-              e.stopPropagation();
-              handleRecordingStop();
-            }}
-            onPointerCancel={(e) => {
-              e.preventDefault();
-              e.stopPropagation();
-              handleRecordingStop();
-            }}
-            onContextMenu={(e) => {
-              e.preventDefault();
-              e.stopPropagation();
-            }}
+          <MobileVoiceRecording
+            onVoiceMessage={sendVoiceMessage}
+            onVoiceNote={sendVoiceNote}
             disabled={isRequestingPermission}
-            className={cn(
-              "rounded-full p-3 transition-all duration-200",
-              "select-none outline-none focus:outline-none",
-              "pointer-events-auto cursor-pointer",
-              "voice-recording-button voice-record-button",
-              "w-12 h-12 flex items-center justify-center",
-              isRecording 
-                ? "bg-red-600 hover:bg-red-700 text-white scale-110 shadow-lg" 
-                : isRequestingPermission
-                ? "bg-yellow-600 hover:bg-yellow-700 text-white opacity-75"
-                : !micPermissionGranted && !permissionRequested
-                ? "bg-blue-600 hover:bg-blue-700 text-white"
-                : isButtonPressed
-                ? "bg-green-600 hover:bg-green-700 text-white"
-                : "bg-gray-600 hover:bg-gray-700 text-white"
-            )}
-            style={{ 
-              touchAction: 'manipulation',
-              WebkitTouchCallout: 'none',
-              WebkitUserSelect: 'none',
-              userSelect: 'none',
-              WebkitTapHighlightColor: 'transparent'
-            }}
-          >
-            {isRecording ? <MicOff className="w-5 h-5" /> : 
-             isRequestingPermission ? <Mic className="w-5 h-5 animate-pulse" /> : 
-             !micPermissionGranted && !permissionRequested ? <Mic className="w-5 h-5 animate-bounce" /> :
-             <Mic className="w-5 h-5" />}
-          </Button>
+            className="mobile-voice-button"
+          />
           
           <Button
             onClick={handleSendMessage}
