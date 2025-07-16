@@ -40,9 +40,11 @@ export function AdminDashboard() {
 
   const fetchContacts = async () => {
     try {
-      // Check if we're on Netlify or local development
-      const isNetlify = window.location.hostname.includes('netlify.app');
-      const endpoint = isNetlify ? '/.netlify/functions/admin' : '/api/contacts';
+      // Check if we're in a serverless environment
+      const isServerless = window.location.hostname.includes('netlify.app') || 
+                          window.location.hostname.includes('vercel.app') ||
+                          window.location.hostname.includes('herokuapp.com');
+      const endpoint = isServerless ? '/.netlify/functions/admin' : '/api/contacts';
       
       const response = await fetch(endpoint);
       if (response.ok) {
@@ -64,9 +66,11 @@ export function AdminDashboard() {
 
   const fetchUserMessages = async (userName: string) => {
     try {
-      // Check if we're on Netlify or local development
-      const isNetlify = window.location.hostname.includes('netlify.app');
-      const endpoint = isNetlify 
+      // Check if we're in a serverless environment
+      const isServerless = window.location.hostname.includes('netlify.app') || 
+                          window.location.hostname.includes('vercel.app') ||
+                          window.location.hostname.includes('herokuapp.com');
+      const endpoint = isServerless 
         ? `/.netlify/functions/admin-messages?userName=${encodeURIComponent(userName)}`
         : `/api/admin/messages/${encodeURIComponent(userName)}`;
       
