@@ -19,6 +19,7 @@ export function MobileVoiceRecording({
   const [recordingTime, setRecordingTime] = useState(0);
   const [micPermissionGranted, setMicPermissionGranted] = useState(false);
   const [isProcessing, setIsProcessing] = useState(false);
+  const [permissionJustGranted, setPermissionJustGranted] = useState(false);
   
   const mediaRecorderRef = useRef<MediaRecorder | null>(null);
   const audioChunksRef = useRef<Blob[]>([]);
@@ -60,10 +61,18 @@ export function MobileVoiceRecording({
       const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
       stream.getTracks().forEach(track => track.stop());
       setMicPermissionGranted(true);
+      setPermissionJustGranted(true);
+      
+      // Clear the "just granted" state after 3 seconds
+      setTimeout(() => {
+        setPermissionJustGranted(false);
+      }, 3000);
+      
       return true;
     } catch (error) {
       console.error('Microphone permission denied:', error);
       setMicPermissionGranted(false);
+      setPermissionJustGranted(false);
       return false;
     }
   };
@@ -137,6 +146,12 @@ export function MobileVoiceRecording({
       
     } catch (error) {
       console.error('Error starting recording:', error);
+      
+      // If permission was denied during recording start, reset permission state
+      if (error.name === 'NotAllowedError') {
+        setMicPermissionGranted(false);
+      }
+      
       cleanup();
     } finally {
       setIsProcessing(false);
@@ -180,12 +195,21 @@ export function MobileVoiceRecording({
     
     if (disabled || isProcessing) return;
     
-    // Ensure microphone permission
+    // If permission not granted, request it but don't start recording yet
     if (!micPermissionGranted) {
+      setIsProcessing(true);
       const granted = await ensureMicPermission();
+      setIsProcessing(false);
+      
       if (!granted) return;
+      
+      // Permission was just granted, user needs to press and hold again
+      console.log('Microphone permission granted. Please press and hold the voice button again to start recording.');
+      return;
     }
     
+    // Only start recording if permission was already granted
+    setPermissionJustGranted(false); // Clear the indicator
     await startRecording();
   };
 
@@ -247,6 +271,10 @@ export function MobileVoiceRecording({
             ? "bg-red-600 hover:bg-red-700 text-white scale-110 shadow-lg" 
             : isProcessing
             ? "bg-yellow-600 hover:bg-yellow-700 text-white opacity-75"
+            : permissionJustGranted
+            ? "bg-green-600 hover:bg-green-700 text-white animate-pulse"
+            : !micPermissionGranted
+            ? "bg-blue-600 hover:bg-blue-700 text-white"
             : "bg-gray-600 hover:bg-gray-700 text-white",
           className
         )}
@@ -260,6 +288,12 @@ export function MobileVoiceRecording({
       >
         {isRecording ? (
           <MicOff className="w-5 h-5" />
+        ) : isProcessing ? (
+          <Mic className="w-5 h-5 animate-pulse" />
+        ) : permissionJustGranted ? (
+          <Mic className="w-5 h-5 animate-bounce" />
+        ) : !micPermissionGranted ? (
+          <Mic className="w-5 h-5 animate-bounce" />
         ) : (
           <Mic className="w-5 h-5" />
         )}
