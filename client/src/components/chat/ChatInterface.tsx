@@ -52,10 +52,45 @@ export function ChatInterface() {
     handleLogout
   } = useChat();
 
-  // Auto-scroll to bottom when new messages arrive
+  // Auto-scroll to bottom when new messages arrive - Mobile optimized
   useEffect(() => {
-    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+    const scrollToBottom = () => {
+      if (messagesEndRef.current) {
+        // Use smooth scrolling for desktop, instant for mobile to avoid issues
+        const isMobile = window.innerWidth <= 430;
+        messagesEndRef.current.scrollIntoView({ 
+          behavior: isMobile ? 'instant' : 'smooth',
+          block: 'end'
+        });
+      }
+    };
+    
+    // Small delay to ensure DOM is updated
+    const timeoutId = setTimeout(scrollToBottom, 100);
+    return () => clearTimeout(timeoutId);
   }, [messages, isTyping]);
+
+  // Lock scroll position on mobile when recording
+  useEffect(() => {
+    if (isRecording) {
+      document.body.style.overflow = 'hidden';
+      document.body.style.position = 'fixed';
+      document.body.style.width = '100%';
+      document.body.style.height = '100%';
+    } else {
+      document.body.style.overflow = '';
+      document.body.style.position = '';
+      document.body.style.width = '';
+      document.body.style.height = '';
+    }
+    
+    return () => {
+      document.body.style.overflow = '';
+      document.body.style.position = '';
+      document.body.style.width = '';
+      document.body.style.height = '';
+    };
+  }, [isRecording]);
 
   // Clean up recording timer on component unmount
   useEffect(() => {
@@ -339,18 +374,20 @@ export function ChatInterface() {
       const voiceNoteMessage = `🎤 Voice message (${actualTime}s)`;
       console.log('Sending voice note message:', voiceNoteMessage);
       
+      // First send the voice note message to chat
       if (wsRef.current && wsRef.current.readyState === WebSocket.OPEN) {
         wsRef.current.send(JSON.stringify({
-          type: 'voice_note',
+          type: 'message',
           content: voiceNoteMessage,
+          isUser: true,
           userName: userName
         }));
-        console.log('Voice note message sent to WebSocket');
+        console.log('Voice note message sent to chat');
       } else {
         console.log('WebSocket not ready, state:', wsRef.current?.readyState);
       }
 
-      // Show typing indicator while processing
+      // Show typing indicator while processing transcription
       const typingMessage = { type: 'typing' };
       if (wsRef.current && wsRef.current.readyState === WebSocket.OPEN) {
         wsRef.current.send(JSON.stringify(typingMessage));
@@ -370,8 +407,7 @@ export function ChatInterface() {
       if (response.ok) {
         const { text } = await response.json();
         if (text?.trim()) {
-          // Send transcribed text to WebSocket for AI processing only
-          // This won't show in chat, only triggers AI response
+          // Send transcribed text to WebSocket for AI processing
           if (wsRef.current && wsRef.current.readyState === WebSocket.OPEN) {
             wsRef.current.send(JSON.stringify({
               type: 'voice_transcription',
@@ -496,9 +532,9 @@ export function ChatInterface() {
         "bg-gray-50 dark:bg-gray-800",
         "mobile-chat-input"
       )}>
-        {/* Recording indicator overlay */}
+        {/* Recording indicator overlay - Fixed positioning */}
         {isRecording && (
-          <div className="absolute inset-0 bg-red-500 bg-opacity-10 flex items-center justify-center z-50 mobile-voice-recording">
+          <div className="fixed inset-0 bg-red-500 bg-opacity-20 flex items-center justify-center z-50 mobile-voice-recording">
             <div className="bg-red-500 text-white px-6 py-3 rounded-full flex items-center space-x-3 shadow-lg">
               <div className="w-3 h-3 bg-white rounded-full animate-pulse"></div>
               <span className="text-sm font-medium">Recording</span>
