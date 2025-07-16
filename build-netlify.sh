@@ -1,35 +1,79 @@
 #!/bin/bash
 set -e
 
-echo "=== FINAL BUILD SCRIPT ==="
-echo "Building frontend and functions for deployment"
+echo "=== NETLIFY BUILD FOR TSIE MASILO BOT ==="
+echo "$(date): Starting build with proper dependencies"
 
-# Clean build directory
+# Clean everything first
 rm -rf dist/
-mkdir -p dist/public/assets dist/functions
+rm -rf node_modules/.vite
+rm -rf .vite
 
-# Install dependencies if needed
-echo "Installing dependencies..."
-npm ci
+# Install all dependencies including dev dependencies
+echo "Installing all dependencies..."
+NODE_ENV=development npm install
 
-# Build frontend using the working approach
-echo "Building frontend..."
-npx vite build
+# Build the React frontend
+echo "Building React frontend..."
+npx vite build && npx esbuild server/index.ts --platform=node --packages=external --bundle --format=esm --outdir=dist
 
-# Build functions
-echo "Building functions..."
-cat > dist/functions/package.json << 'FUNC_EOF'
+# Build Netlify functions with proper CommonJS format
+echo "Building Netlify functions..."
+mkdir -p dist/functions
+
+# Create CommonJS package.json for functions
+cat > dist/functions/package.json << 'EOF'
 {
   "type": "commonjs"
 }
-FUNC_EOF
+EOF
 
-# Build all functions
-npx esbuild src/functions/chat.ts --platform=node --bundle --format=cjs --outfile="dist/functions/chat.js" --external:@neondatabase/serverless --external:ws --external:openai --external:drizzle-orm --external:drizzle-zod --external:zod
-npx esbuild src/functions/messages.ts --platform=node --bundle --format=cjs --outfile="dist/functions/messages.js" --external:@neondatabase/serverless --external:ws --external:openai --external:drizzle-orm --external:drizzle-zod --external:zod
-npx esbuild src/functions/admin.ts --platform=node --bundle --format=cjs --outfile="dist/functions/admin.js" --external:@neondatabase/serverless --external:ws --external:openai --external:drizzle-orm --external:drizzle-zod --external:zod
-npx esbuild src/functions/admin-messages.ts --platform=node --bundle --format=cjs --outfile="dist/functions/admin-messages.js" --external:@neondatabase/serverless --external:ws --external:openai --external:drizzle-orm --external:drizzle-zod --external:zod
+# Build services first - these are included in the function bundles
+if [ -d "src/functions/services" ]; then
+    echo "Services will be bundled with functions..."
+fi
 
-echo "Build complete!"
-echo "Frontend: $(ls -la dist/public/assets/ | wc -l) assets"
-echo "Functions: $(ls dist/functions/*.js | wc -l) functions"
+# Compile each function individually with CommonJS format
+for func in src/functions/*.ts; do
+    if [ -f "$func" ]; then
+        funcname=$(basename "$func" .ts)
+        echo "Building function: $funcname"
+        npx esbuild "$func" --platform=node --bundle --format=cjs --outfile="dist/functions/$funcname.js" --external:@neondatabase/serverless --external:ws --external:openai --external:@anthropic-ai/sdk --external:drizzle-orm --external:drizzle-zod --external:zod
+    fi
+done
+
+# Create a simple test function to verify deployment
+echo "Creating test function..."
+cat > dist/functions/test.js << 'EOF'
+exports.handler = async (event, context) => {
+  return {
+    statusCode: 200,
+    headers: {
+      'Content-Type': 'application/json',
+      'Access-Control-Allow-Origin': '*',
+    },
+    body: JSON.stringify({
+      message: 'Netlify functions are working!',
+      timestamp: new Date().toISOString(),
+      method: event.httpMethod,
+      path: event.path
+    })
+  };
+};
+EOF
+
+# Copy shared schema for functions
+if [ -d "shared" ]; then
+    echo "Copying shared schema..."
+    cp -r shared dist/
+fi
+
+# Copy redirects
+echo "Copying redirects..."
+cp _redirects dist/public/
+
+echo "✅ Build completed successfully!"
+echo "Files created:"
+ls -la dist/public/
+ls -la dist/functions/
+echo "Test function created for verification"
