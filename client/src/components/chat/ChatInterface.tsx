@@ -406,10 +406,10 @@ export function ChatInterface() {
   return (
     <div className={cn(
       "flex flex-col h-screen max-w-md mx-auto bg-white dark:bg-gray-900 shadow-lg",
-      "transition-colors duration-300"
+      "mobile-chat-container mobile-sharp-text transition-colors duration-300"
     )}>
       {/* Header */}
-      <div className="bg-green-600 dark:bg-green-700 px-4 py-3 flex items-center justify-between">
+      <div className="bg-green-600 dark:bg-green-700 px-4 py-3 flex items-center justify-between mobile-chat-header">
         <div className="flex items-center space-x-3">
           <div className="relative">
             <img 
@@ -452,7 +452,8 @@ export function ChatInterface() {
       {/* Messages Container */}
       <div className={cn(
         "flex-1 overflow-y-auto p-4 space-y-3",
-        "bg-gradient-to-b from-gray-50 to-gray-100 dark:from-gray-900 dark:to-gray-800"
+        "bg-gradient-to-b from-gray-50 to-gray-100 dark:from-gray-900 dark:to-gray-800",
+        "mobile-chat-messages"
       )}>
         {isLoading ? (
           <div className="flex justify-center items-center h-full">
@@ -492,11 +493,12 @@ export function ChatInterface() {
       {/* Input Area */}
       <div className={cn(
         "p-4 border-t border-gray-200 dark:border-gray-700",
-        "bg-gray-50 dark:bg-gray-800"
+        "bg-gray-50 dark:bg-gray-800",
+        "mobile-chat-input"
       )}>
         {/* Recording indicator overlay */}
         {isRecording && (
-          <div className="absolute inset-0 bg-red-500 bg-opacity-10 flex items-center justify-center z-50">
+          <div className="absolute inset-0 bg-red-500 bg-opacity-10 flex items-center justify-center z-50 mobile-voice-recording">
             <div className="bg-red-500 text-white px-6 py-3 rounded-full flex items-center space-x-3 shadow-lg">
               <div className="w-3 h-3 bg-white rounded-full animate-pulse"></div>
               <span className="text-sm font-medium">Recording</span>
@@ -514,7 +516,7 @@ export function ChatInterface() {
               variant="ghost"
               size="sm"
               onClick={() => setIsEmojiPickerOpen(!isEmojiPickerOpen)}
-              className="text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200"
+              className="text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 mobile-touch-button"
               disabled={isRecording}
             >
               <Smile className="w-5 h-5" />
@@ -534,7 +536,7 @@ export function ChatInterface() {
             value={message}
             onChange={(e) => setMessage(e.target.value)}
             onKeyPress={handleKeyPress}
-            className="flex-1 rounded-full border-gray-300 dark:border-gray-600 focus:border-green-500 dark:focus:border-green-400"
+            className="flex-1 rounded-full border-gray-300 dark:border-gray-600 focus:border-green-500 dark:focus:border-green-400 mobile-input-field"
             disabled={isRecording}
           />
           
@@ -599,6 +601,7 @@ export function ChatInterface() {
             disabled={!message.trim() || isRecording}
             className={cn(
               "bg-green-600 hover:bg-green-700 text-white rounded-full p-2 transition-opacity",
+              "mobile-touch-button",
               isRecording ? "opacity-50" : "opacity-100"
             )}
           >
