@@ -20,6 +20,7 @@ export function MobileVoiceRecording({
   const [micPermissionGranted, setMicPermissionGranted] = useState(false);
   const [isProcessing, setIsProcessing] = useState(false);
   const [permissionJustGranted, setPermissionJustGranted] = useState(false);
+  const [isButtonPressed, setIsButtonPressed] = useState(false);
   
   const mediaRecorderRef = useRef<MediaRecorder | null>(null);
   const audioChunksRef = useRef<Blob[]>([]);
@@ -38,6 +39,14 @@ export function MobileVoiceRecording({
       }
     };
   }, []);
+
+  // Safety mechanism: If recording is active but button is not pressed, stop recording
+  useEffect(() => {
+    if (isRecording && !isButtonPressed) {
+      console.log('Safety stop: Recording active but button not pressed');
+      stopRecording();
+    }
+  }, [isRecording, isButtonPressed]);
 
   // Prevent text selection and scrolling during recording
   useEffect(() => {
@@ -161,10 +170,13 @@ export function MobileVoiceRecording({
   const stopRecording = (): void => {
     if (!isRecording || !mediaRecorderRef.current) return;
     
+    console.log('Stopping recording...');
     setIsProcessing(true);
     
     try {
-      mediaRecorderRef.current.stop();
+      if (mediaRecorderRef.current.state === 'recording') {
+        mediaRecorderRef.current.stop();
+      }
     } catch (error) {
       console.error('Error stopping recording:', error);
       cleanup();
@@ -172,6 +184,8 @@ export function MobileVoiceRecording({
   };
 
   const cleanup = (): void => {
+    console.log('Cleaning up recording state...');
+    
     if (streamRef.current) {
       streamRef.current.getTracks().forEach(track => track.stop());
       streamRef.current = null;
@@ -183,23 +197,30 @@ export function MobileVoiceRecording({
     }
     
     setIsRecording(false);
+    setIsButtonPressed(false);
     setRecordingTime(0);
     setIsProcessing(false);
     mediaRecorderRef.current = null;
     audioChunksRef.current = [];
+    
+    console.log('Recording state cleaned up');
   };
 
   const handlePointerDown = async (e: React.PointerEvent) => {
     e.preventDefault();
     e.stopPropagation();
     
-    if (disabled || isProcessing) return;
+    if (disabled || isProcessing || isRecording) return;
+    
+    console.log('Button pressed down');
+    setIsButtonPressed(true);
     
     // If permission not granted, request it but don't start recording yet
     if (!micPermissionGranted) {
       setIsProcessing(true);
       const granted = await ensureMicPermission();
       setIsProcessing(false);
+      setIsButtonPressed(false);
       
       if (!granted) return;
       
@@ -208,7 +229,7 @@ export function MobileVoiceRecording({
       return;
     }
     
-    // Only start recording if permission was already granted
+    // Only start recording if permission was already granted and not currently recording
     setPermissionJustGranted(false); // Clear the indicator
     await startRecording();
   };
@@ -217,7 +238,12 @@ export function MobileVoiceRecording({
     e.preventDefault();
     e.stopPropagation();
     
+    console.log('Button released');
+    setIsButtonPressed(false);
+    
+    // Always stop recording when pointer is released
     if (isRecording) {
+      console.log('Stopping recording due to button release');
       stopRecording();
     }
   };
@@ -226,7 +252,26 @@ export function MobileVoiceRecording({
     e.preventDefault();
     e.stopPropagation();
     
+    console.log('Pointer left button');
+    setIsButtonPressed(false);
+    
+    // Always stop recording when pointer leaves the button
     if (isRecording) {
+      console.log('Stopping recording due to pointer leave');
+      stopRecording();
+    }
+  };
+
+  const handlePointerCancel = (e: React.PointerEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    
+    console.log('Pointer cancelled');
+    setIsButtonPressed(false);
+    
+    // Always stop recording when pointer is cancelled
+    if (isRecording) {
+      console.log('Stopping recording due to pointer cancel');
       stopRecording();
     }
   };
@@ -260,13 +305,14 @@ export function MobileVoiceRecording({
         onPointerDown={handlePointerDown}
         onPointerUp={handlePointerUp}
         onPointerLeave={handlePointerLeave}
-        onPointerCancel={handlePointerLeave}
+        onPointerCancel={handlePointerCancel}
         onContextMenu={(e) => e.preventDefault()}
         disabled={disabled || isProcessing}
         className={cn(
           "w-12 h-12 rounded-full flex items-center justify-center transition-all duration-200",
           "select-none outline-none focus:outline-none",
           "pointer-events-auto cursor-pointer",
+          "active:scale-95", // Visual feedback for press
           isRecording 
             ? "bg-red-600 hover:bg-red-700 text-white scale-110 shadow-lg" 
             : isProcessing
