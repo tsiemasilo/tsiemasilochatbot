@@ -1,13 +1,3 @@
-/**
- * WebSocket Hook for Real-time Communication
- * 
- * This hook manages WebSocket connections for real-time chat functionality:
- * - Handles connection state and message broadcasting
- * - Provides fallback HTTP API for serverless environments
- * - Manages typing indicators and connection resilience
- * - Supports voice message transcription and file uploads
- */
-
 import { useState, useEffect, useRef } from 'react';
 
 interface WebSocketMessage {
@@ -22,22 +12,20 @@ export function useWebSocket() {
   const [isTyping, setIsTyping] = useState(false);
   const wsRef = useRef<WebSocket | null>(null);
   const [messages, setMessages] = useState<Array<{content: string, isUser: boolean, timestamp: Date}>>([]);
-  const [isServerless, setIsServerless] = useState(false);
+  const [isNetlify, setIsNetlify] = useState(false);
 
   useEffect(() => {
-    // Detect if we're running in a serverless environment
-    const isServerlessEnvironment = window.location.hostname.includes('netlify.app') || 
-                                   window.location.hostname.includes('vercel.app') ||
-                                   window.location.hostname.includes('herokuapp.com');
-    setIsServerless(isServerlessEnvironment);
+    // Check if we're on Netlify - use hostname to avoid localhost issues
+    const isNetlifyDeploy = window.location.hostname.includes('netlify.app');
+    setIsNetlify(isNetlifyDeploy);
     
-    console.log('Environment detection:', { 
+    console.log('Platform detection:', { 
       hostname: window.location.hostname, 
-      isServerless: isServerlessEnvironment 
+      isNetlify: isNetlifyDeploy 
     });
 
-    // For serverless environments, we're always "connected" since we use HTTP
-    if (isServerlessEnvironment) {
+    // For Netlify, we're always "connected" since we use HTTP
+    if (isNetlifyDeploy) {
       setIsConnected(true);
       return;
     }
@@ -86,7 +74,7 @@ export function useWebSocket() {
         
         // Attempt to reconnect after 1 second
         setTimeout(() => {
-          if (!isServerlessEnvironment) {
+          if (!isNetlifyDeploy) {
             connectWebSocket();
           }
         }, 1000);
@@ -110,8 +98,8 @@ export function useWebSocket() {
   }, []);
 
   const sendMessage = async (content: string, userName?: string) => {
-    if (isServerless) {
-      // Serverless: Use HTTP API
+    if (isNetlify) {
+      // Netlify: Use HTTP API
       try {
         // Add user message immediately
         setMessages(prev => [...prev, {
@@ -155,7 +143,7 @@ export function useWebSocket() {
         setIsTyping(false);
       }
     } else {
-      // Direct Server: Use WebSocket
+      // Replit: Use WebSocket
       if (wsRef.current && wsRef.current.readyState === WebSocket.OPEN) {
         wsRef.current.send(JSON.stringify({
           type: 'message',
@@ -192,8 +180,8 @@ export function useWebSocket() {
   };
 
   const sendVoiceMessage = (content: string, userName?: string) => {
-    if (isServerless) {
-      // For serverless environments, use regular sendMessage
+    if (isNetlify) {
+      // For Netlify, use regular sendMessage
       sendMessage(content, userName);
     } else {
       // For WebSocket
@@ -209,8 +197,8 @@ export function useWebSocket() {
   };
 
   const sendVoiceTranscription = async (content: string, userName?: string) => {
-    if (isServerless) {
-      // For serverless environments, use sendMessage for voice transcription
+    if (isNetlify) {
+      // For Netlify, use sendMessage for voice transcription
       await sendMessage(content, userName);
     } else if (wsRef.current && wsRef.current.readyState === WebSocket.OPEN) {
       wsRef.current.send(JSON.stringify({
@@ -225,15 +213,15 @@ export function useWebSocket() {
     try {
       let response;
       
-      if (isServerless) {
-        // For serverless environments, use functions
+      if (isNetlify) {
+        // For Netlify, use functions
         response = await fetch(`/.netlify/functions/messages`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ userName })
         });
       } else {
-        // For direct server connection, use regular API
+        // For local development, use regular API
         response = await fetch(`/api/messages?userName=${encodeURIComponent(userName)}`);
       }
       
