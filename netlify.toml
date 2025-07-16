@@ -5,7 +5,9 @@
 
 [build.environment]
   NODE_VERSION = "18"
+  NODE_ENV = "production"
 
+# API redirects for serverless functions
 [[redirects]]
   from = "/api/chat"
   to = "/.netlify/functions/chat"
@@ -17,7 +19,7 @@
   status = 200
 
 [[redirects]]
-  from = "/api/admin/contacts"
+  from = "/api/contacts"
   to = "/.netlify/functions/admin"
   status = 200
 
@@ -26,6 +28,7 @@
   to = "/.netlify/functions/admin-messages"
   status = 200
 
+# Catch-all for SPA routing
 [[redirects]]
   from = "/*"
   to = "/index.html"
