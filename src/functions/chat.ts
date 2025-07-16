@@ -191,8 +191,8 @@ function getMaxTokens(engagement: EngagementAnalysis): number {
   return tokenLimits[engagement.responseStyle];
 }
 
-// Database connection for Netlify - uses production database
-const PRODUCTION_DB_URL = "postgresql://neondb_owner:npg_KrvFQYfFIEHuSqnQKTqGLaVNRdUTULmP@ep-billowing-mud-a5d6fmj1.us-east-2.aws.neon.tech/neondb?sslmode=require";
+// Database connection for Netlify - uses Replit environment variables
+const PRODUCTION_DB_URL = "postgresql://neondb_owner:npg_E3Jn8cxsglWG@ep-round-brook-a5e3k093.us-east-2.aws.neon.tech/neondb?sslmode=require";
 const pool = new Pool({ 
   connectionString: process.env.DATABASE_URL || PRODUCTION_DB_URL
 });
