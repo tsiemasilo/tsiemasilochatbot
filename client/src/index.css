@@ -73,6 +73,110 @@
 }
 
 /* iPhone 12 Pro Mobile Optimizations */
+@media (max-width: 430px) {
+  /* Prevent text selection on mobile - critical for voice recording */
+  * {
+    -webkit-touch-callout: none !important;
+    -webkit-user-select: none !important;
+    -khtml-user-select: none !important;
+    -moz-user-select: none !important;
+    -ms-user-select: none !important;
+    user-select: none !important;
+  }
+  
+  /* Allow text selection only in input fields */
+  input, textarea, [contenteditable="true"] {
+    -webkit-touch-callout: auto !important;
+    -webkit-user-select: auto !important;
+    -khtml-user-select: auto !important;
+    -moz-user-select: auto !important;
+    -ms-user-select: auto !important;
+    user-select: auto !important;
+  }
+  
+  /* Voice recording button optimizations */
+  .voice-record-button {
+    -webkit-touch-callout: none !important;
+    -webkit-user-select: none !important;
+    touch-action: none !important;
+    -webkit-tap-highlight-color: transparent !important;
+    -webkit-appearance: none !important;
+    min-width: 48px !important;
+    min-height: 48px !important;
+    -webkit-user-drag: none !important;
+    -webkit-touch-callout: none !important;
+  }
+  
+  /* Prevent text selection during voice recording */
+  .recording-active * {
+    -webkit-touch-callout: none !important;
+    -webkit-user-select: none !important;
+    -khtml-user-select: none !important;
+    -moz-user-select: none !important;
+    -ms-user-select: none !important;
+    user-select: none !important;
+    pointer-events: none !important;
+  }
+  
+  .recording-active .voice-record-button {
+    pointer-events: auto !important;
+  }
+  
+  /* iPhone 12 Pro exact dimensions */
+  html, body {
+    width: 100vw !important;
+    max-width: 390px !important;
+    height: 100vh !important;
+    max-height: 844px !important;
+    margin: 0 auto !important;
+    overflow-x: hidden !important;
+    -webkit-overflow-scrolling: touch !important;
+  }
+  
+  #root {
+    width: 100vw !important;
+    max-width: 390px !important;
+    height: 100vh !important;
+    max-height: 844px !important;
+    margin: 0 auto !important;
+    overflow-x: hidden !important;
+  }
+  
+  .chat-container {
+    width: 100vw !important;
+    max-width: 390px !important;
+    height: 100vh !important;
+    max-height: 844px !important;
+    margin: 0 auto !important;
+  }
+}
+
+/* Landscape mode (844x390) */
+@media (max-width: 844px) and (orientation: landscape) {
+  html, body {
+    width: 100vw !important;
+    max-width: 844px !important;
+    height: 100vh !important;
+    max-height: 390px !important;
+    margin: 0 auto !important;
+  }
+  
+  #root {
+    width: 100vw !important;
+    max-width: 844px !important;
+    height: 100vh !important;
+    max-height: 390px !important;
+    margin: 0 auto !important;
+  }
+  
+  .chat-container {
+    width: 100vw !important;
+    max-width: 844px !important;
+    height: 100vh !important;
+    max-height: 390px !important;
+    margin: 0 auto !important;
+  }
+}
 @media (max-width: 390px) {
   html {
     font-size: 14px;
