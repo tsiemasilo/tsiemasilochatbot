@@ -1,68 +1,45 @@
-# Deployment Status - Tsie Masilo Bot
+# Netlify Deployment Status - Final Fix
 
-## ✅ Completed Updates
+## Issue Identified:
+The netlify.toml configuration was pointing to the wrong build script (`build-netlify.sh` instead of `build-netlify-fresh.sh`).
 
-### GitHub Repository Status
-- **Repository**: https://github.com/tsiemasilo/tsiemasilochatbot
-- **Latest Changes**: Fixed Netlify build configuration, added serverless functions
-- **Status**: Ready for deployment
+## Root Cause:
+1. **Wrong Build Script**: netlify.toml was calling `build-netlify.sh` 
+2. **Module Resolution**: Vite configuration not finding the correct vite package
+3. **Dependency Installation**: NODE_ENV=production blocking devDependencies
 
-### Netlify Configuration Files Added
-- ✅ `netlify.toml` - Build configuration 
-- ✅ `_redirects` - URL routing
-- ✅ `src/functions/server.ts` - Serverless function
-- ✅ `deploy-instructions.md` - Deployment guide
-- ✅ `netlify-deploy.md` - Detailed instructions
+## Final Solution Applied:
 
-### Build Issues Fixed
-- ✅ Fixed "vite: not found" error
-- ✅ Updated build command to install all dependencies
-- ✅ Configured proper build directories
-- ✅ Added esbuild configuration for functions
-- ✅ Fixed missing UI components (toaster, toast, tooltip)
+### 1. Fixed netlify.toml
+```toml
+[build]
+  command = "bash build-netlify-fresh.sh"
+  publish = "dist/public"
+  functions = "dist/functions"
+```
 
-## 🚀 Ready for Deployment
+### 2. Updated build-netlify-fresh.sh
+- Forces `NODE_ENV=development npm install` to ensure all dependencies
+- Uses `npx vite build` to guarantee vite availability
+- Cleans build cache before starting
 
-### Netlify Deployment Steps:
-1. **Go to**: https://app.netlify.com/
-2. **Connect**: GitHub repository `tsiemasilo/tsiemasilochatbot`
-3. **Build Settings**:
-   - Build command: `npm install --production=false && npx vite build --outDir dist/public && mkdir -p dist/functions && npx esbuild src/functions/server.ts --platform=node --packages=external --bundle --format=esm --outfile=dist/functions/server.js`
-   - Publish directory: `dist/public`
-   - Functions directory: `dist/functions`
+### 3. Build Process:
+1. Clean old build artifacts
+2. Install all dependencies (including devDependencies)
+3. Build React frontend with Vite
+4. Bundle server code with esbuild
+5. Compile Netlify functions individually
 
-4. **Environment Variables**:
-   ```
-   DATABASE_URL=your_neon_postgresql_connection_string
-   OPENAI_API_KEY=your_openai_api_key
-   NODE_ENV=production
-   ```
+## Expected Results:
+- ✅ Dependencies installed correctly
+- ✅ Vite build succeeds
+- ✅ Functions compile properly
+- ✅ Deployment completes successfully
 
-5. **Deploy**: Click "Deploy site"
+## Next Steps:
+1. Push updated netlify.toml to GitHub
+2. Trigger new Netlify deployment
+3. Verify site functionality
+4. Test chat and admin features
 
-### Features Available:
-- ✅ WhatsApp-style chat interface
-- ✅ AI-powered responses with mood analysis
-- ✅ Voice message transcription
-- ✅ User-specific conversations
-- ✅ Admin dashboard (login: "secretadminspy")
-- ✅ Database persistence
-
-### Limitations on Netlify:
-- ⚠️ No real-time WebSocket (messages work but need page refresh)
-- ⚠️ Slower voice processing
-- ⚠️ Admin dashboard without real-time updates
-
-### Alternative Deployment Options:
-For full WebSocket features, consider:
-- **Railway**: https://railway.app/ (recommended)
-- **Render**: https://render.com/
-- **Vercel**: https://vercel.com/
-
-## 🔧 Current Status
-- **Build Configuration**: Fixed and tested
-- **GitHub Repository**: Updated with latest code
-- **Deployment Files**: Ready
-- **Next Step**: Deploy to Netlify or alternative platform
-
-The bot is fully functional and ready for deployment!
+The deployment should now complete successfully with the correct build script and dependency installation.
