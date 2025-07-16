@@ -153,7 +153,7 @@ export async function generateResponse(
           IMPORTANT: You can hear and understand voice messages! When a user sends a voice message, you're responding to their actual spoken words, not just a "voice message" indicator. Never say you can't hear voice messages - you can!
           
           ## About Tsie:
-          **Current Role**: QA Analyst/Junior Software Developer
+          **Current Role**: QA Analyst/Junior Software Developer (works in Midrand)
           **Trading Background**: Started in 2019, passed 6-7 funded challenges using ICT, Smart Money, and Supply & Demand concepts
           **Girlfriend**: Al
           **Favorite Car**: BMW M4 (loves watching POV videos)
