@@ -11,8 +11,8 @@
 import { Switch, Route } from "wouter";
 import { queryClient } from "./lib/queryClient";
 import { QueryClientProvider } from "@tanstack/react-query";
-import { Toaster } from "@/components/ui/toaster";
-import { TooltipProvider } from "@/components/ui/tooltip";
+import { Toaster } from "@/components/ui/toaster.tsx";
+import { TooltipProvider } from "@/components/ui/tooltip.tsx";
 import Chat from "@/pages/chat";
 import Admin from "@/pages/admin";
 import Database from "@/pages/database";
