@@ -118,7 +118,8 @@ export function useWebSocket() {
           },
           body: JSON.stringify({
             content: content,
-            userName: userName || 'Anonymous'
+            userName: userName || 'Anonymous',
+            type: 'message'
           })
         });
         
@@ -179,10 +180,35 @@ export function useWebSocket() {
     }
   };
 
-  const sendVoiceMessage = (content: string, userName?: string) => {
+  const sendVoiceMessage = async (content: string, userName?: string) => {
     if (isNetlify) {
-      // For Netlify, use regular sendMessage
-      sendMessage(content, userName);
+      // For Netlify, send voice note via HTTP API
+      try {
+        const response = await fetch('/.netlify/functions/chat', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            content: content,
+            userName: userName || 'Anonymous',
+            type: 'voice_note'
+          })
+        });
+        
+        if (response.ok) {
+          // Add voice note to display immediately
+          setMessages(prev => [...prev, {
+            content,
+            isUser: true,
+            timestamp: new Date()
+          }]);
+        } else {
+          console.error('Failed to send voice note:', response.status);
+        }
+      } catch (error) {
+        console.error('Error sending voice note:', error);
+      }
     } else {
       // For WebSocket
       if (wsRef.current && wsRef.current.readyState === WebSocket.OPEN) {
