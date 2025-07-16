@@ -301,16 +301,10 @@ export function MobileVoiceRecording({
       )}
       
       {/* Voice recording button */}
-      <button
-        onPointerDown={handlePointerDown}
-        onPointerUp={handlePointerUp}
-        onPointerLeave={handlePointerLeave}
-        onPointerCancel={handlePointerCancel}
-        onContextMenu={(e) => e.preventDefault()}
-        disabled={true}
+      <div
         className={cn(
-          "w-12 h-12 rounded-full flex items-center justify-center transition-all duration-200",
-          "select-none outline-none focus:outline-none",
+          "w-12 h-12 rounded-full flex items-center justify-center",
+          "select-none outline-none",
           "pointer-events-none cursor-not-allowed",
           "bg-gray-400 text-gray-600 opacity-50",
           className
@@ -324,7 +318,7 @@ export function MobileVoiceRecording({
         }}
       >
         <Mic className="w-5 h-5" />
-      </button>
+      </div>
     </>
   );
 }
