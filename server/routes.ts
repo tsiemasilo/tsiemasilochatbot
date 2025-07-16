@@ -1,3 +1,14 @@
+/**
+ * Server Routes and WebSocket Configuration
+ * 
+ * This module handles all API endpoints and real-time communication:
+ * - RESTful API routes for message handling
+ * - WebSocket server for real-time chat functionality
+ * - File upload handling for voice messages
+ * - AI service integration for intelligent responses
+ * - Admin dashboard endpoints for user management
+ */
+
 import type { Express } from "express";
 import { createServer, type Server } from "http";
 import { WebSocketServer, WebSocket } from "ws";
@@ -8,6 +19,16 @@ import multer from "multer";
 import { tmpdir } from "os";
 import { join } from "path";
 
+/**
+ * WebSocket Message Interface
+ * 
+ * Defines the structure for real-time messages between client and server:
+ * - message: Chat message content
+ * - typing/stop_typing: User typing indicators
+ * - voice_transcription: Voice message processing
+ * - voice_note: Voice message data
+ * - user_name: User identification
+ */
 interface WebSocketMessage {
   type: 'message' | 'typing' | 'stop_typing' | 'voice_transcription' | 'voice_note' | 'user_name';
   content?: string;
@@ -15,14 +36,22 @@ interface WebSocketMessage {
   userName?: string;
 }
 
+/**
+ * Main Route Registration Function
+ * 
+ * Sets up all API routes, WebSocket connections, and file upload handlers.
+ * Returns the HTTP server instance for external configuration.
+ */
 export async function registerRoutes(app: Express): Promise<Server> {
   const httpServer = createServer(app);
   
-  // Configure multer for handling file uploads
+  // Configure multer for voice message file uploads
+  // Supports multiple audio formats with security validation
   const upload = multer({
-    dest: tmpdir(),
-    limits: { fileSize: 10 * 1024 * 1024 }, // 10MB limit
+    dest: tmpdir(), // Use system temp directory
+    limits: { fileSize: 10 * 1024 * 1024 }, // 10MB file size limit
     fileFilter: (req, file, cb) => {
+      // Allow only audio file types for voice messages
       const allowedMimeTypes = [
         'audio/webm',
         'audio/ogg',
@@ -44,7 +73,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
   
-  // WebSocket setup for real-time chat
+  // WebSocket server setup for real-time bidirectional communication
   const wss = new WebSocketServer({ server: httpServer, path: '/ws' });
   
   wss.on('connection', (ws) => {
