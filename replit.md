@@ -96,6 +96,13 @@ Preferred communication style: Simple, everyday language.
 
 ### Recent Changes (July 2025)
 
+#### Netlify Build Fix - Vite Not Found Error (July 16, 2025)
+- **Issue**: Netlify deployment failing with "vite: not found" due to NODE_ENV=production skipping devDependencies
+- **Solution**: Updated build-netlify-fresh.sh to force NODE_ENV=development during npm install
+- **Build Process**: Uses npx vite build and npx esbuild to ensure tools are available
+- **Repository**: Updated with fixed build script for successful deployment
+- **Status**: Build script now handles production environment while ensuring all build tools are available
+
 #### Secure API Key Vault Implementation (July 16, 2025)
 - **Security Setup**: API keys securely stored in Replit Secrets vault
 - **Keys Protected**: OPENAI_API_KEY and DATABASE_URL confirmed active
