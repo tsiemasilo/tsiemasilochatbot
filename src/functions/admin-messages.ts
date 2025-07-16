@@ -1,7 +1,7 @@
 import { Handler } from '@netlify/functions';
 import { Pool, neonConfig } from '@neondatabase/serverless';
 import { drizzle } from 'drizzle-orm/neon-serverless';
-import { eq, desc } from 'drizzle-orm';
+import { eq, asc } from 'drizzle-orm';
 import { messages } from '../../shared/schema';
 import ws from "ws";
 
@@ -13,7 +13,7 @@ const PRODUCTION_DB_URL = "postgresql://neondb_owner:npg_E3Jn8cxsglWG@ep-round-b
 const pool = new Pool({ 
   connectionString: process.env.DATABASE_URL || PRODUCTION_DB_URL
 });
-const db = drizzle(pool, { schema: { messages, users } });
+const db = drizzle(pool, { schema: { messages } });
 
 export const handler: Handler = async (event, context) => {
   // Set CORS headers
@@ -63,23 +63,20 @@ export const handler: Handler = async (event, context) => {
 
     console.log(`[Netlify Admin Messages] Loading messages for user: ${userName}`);
 
-    // Get user's message history
+    // Get user's message history in chronological order
     const userMessages = await db
       .select()
       .from(messages)
       .where(eq(messages.userName, userName))
-      .orderBy(desc(messages.timestamp))
+      .orderBy(asc(messages.timestamp))
       .limit(200);
-
-    // Return messages in chronological order
-    const sortedMessages = userMessages.reverse();
     
-    console.log(`[Netlify Admin Messages] Retrieved ${sortedMessages.length} messages for ${userName}`);
+    console.log(`[Netlify Admin Messages] Retrieved ${userMessages.length} messages for ${userName}`);
 
     return {
       statusCode: 200,
       headers,
-      body: JSON.stringify(sortedMessages)
+      body: JSON.stringify(userMessages)
     };
 
   } catch (error) {
