@@ -2,7 +2,7 @@ import { Handler } from '@netlify/functions';
 import { Pool, neonConfig } from '@neondatabase/serverless';
 import { drizzle } from 'drizzle-orm/neon-serverless';
 import { eq, desc, sql } from 'drizzle-orm';
-import { messages, users } from '../../shared/schema';
+import { messages } from '../../shared/schema';
 import ws from "ws";
 
 // Configure WebSocket for Neon
@@ -13,7 +13,7 @@ const PRODUCTION_DB_URL = "postgresql://neondb_owner:npg_E3Jn8cxsglWG@ep-round-b
 const pool = new Pool({ 
   connectionString: process.env.DATABASE_URL || PRODUCTION_DB_URL
 });
-const db = drizzle(pool, { schema: { messages, users } });
+const db = drizzle(pool, { schema: { messages } });
 
 export const handler: Handler = async (event, context) => {
   // Set CORS headers
