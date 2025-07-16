@@ -26,6 +26,7 @@ export function ChatInterface() {
   const [message, setMessage] = useState('');
   const [isEmojiPickerOpen, setIsEmojiPickerOpen] = useState(false);
   const [isRecording, setIsRecording] = useState(false);
+  const [isRecordingActive, setIsRecordingActive] = useState(false);
   const [recordingTime, setRecordingTime] = useState(0);
   
   // Refs for DOM elements and media handling
@@ -191,6 +192,10 @@ export function ChatInterface() {
     isProcessingRef.current = true;
     setIsButtonPressed(true);
     
+    // Add recording active class to prevent text selection
+    setIsRecordingActive(true);
+    document.body.classList.add('recording-active');
+    
     try {
       // Always try to get permission if we don't have it
       if (!micPermissionGranted) {
@@ -198,6 +203,8 @@ export function ChatInterface() {
         const granted = await ensureMicPermission();
         if (!granted) {
           setIsButtonPressed(false);
+          setIsRecordingActive(false);
+          document.body.classList.remove('recording-active');
           return;
         }
       }
@@ -223,6 +230,10 @@ export function ChatInterface() {
     
     isProcessingRef.current = true;
     setIsButtonPressed(false);
+    
+    // Remove recording active class
+    setIsRecordingActive(false);
+    document.body.classList.remove('recording-active');
     
     try {
       // Only stop if actually recording
@@ -643,7 +654,7 @@ export function ChatInterface() {
               "rounded-full p-3 transition-all duration-200",
               "select-none outline-none focus:outline-none",
               "pointer-events-auto cursor-pointer",
-              "voice-recording-button",
+              "voice-recording-button voice-record-button",
               "w-12 h-12 flex items-center justify-center",
               isRecording 
                 ? "bg-red-600 hover:bg-red-700 text-white scale-110 shadow-lg" 
