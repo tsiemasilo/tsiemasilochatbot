@@ -22,6 +22,7 @@ export function MessageBubble({ content, isUser, timestamp, theme }: MessageBubb
       <div className="flex justify-end">
         <div className={cn(
           "max-w-xs lg:max-w-md px-4 py-2 rounded-lg shadow-sm",
+          "mobile-message-bubble",
           theme === 'light' 
             ? "bg-green-100 text-gray-800" 
             : "bg-green-900 text-gray-100"
@@ -47,6 +48,7 @@ export function MessageBubble({ content, isUser, timestamp, theme }: MessageBubb
       />
       <div className={cn(
         "max-w-xs lg:max-w-md px-4 py-2 rounded-lg shadow-sm",
+        "mobile-message-bubble",
         theme === 'light' 
           ? "bg-white text-gray-800" 
           : "bg-gray-800 text-gray-100"
