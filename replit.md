@@ -14,7 +14,7 @@ Preferred communication style: Simple, everyday language.
 - Name: Tsie Masilo
 - Age: 25 (born June 21, 1999)
 - Location: Bedfordview, South Africa
-- Current Role: QA Analyst/Junior Software Developer
+- Current Role: QA Analyst/Junior Software Developer (works in Midrand)
 - Girlfriend: Al
 
 **Trading Background:**
