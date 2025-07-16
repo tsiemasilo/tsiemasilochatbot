@@ -303,6 +303,7 @@ export function MobileVoiceRecording({
       {/* Voice recording button */}
       <div
         className={cn(
+          "voice-button touch-target",
           "w-12 h-12 rounded-full flex items-center justify-center",
           "select-none outline-none",
           "pointer-events-none cursor-not-allowed",
