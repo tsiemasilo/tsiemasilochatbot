@@ -525,11 +525,12 @@ export function ChatInterface() {
 
   return (
     <div className={cn(
-      "flex flex-col h-screen max-w-md mx-auto bg-white dark:bg-gray-900 shadow-lg",
+      "app-container chat-container chat-interface",
+      "flex flex-col h-screen max-w-[390px] mx-auto bg-white dark:bg-gray-900 shadow-lg",
       "mobile-chat-container mobile-sharp-text transition-colors duration-300"
     )}>
       {/* Header */}
-      <div className="bg-green-600 dark:bg-green-700 px-4 py-3 flex items-center justify-between mobile-chat-header">
+      <div className="chat-header bg-green-600 dark:bg-green-700 px-4 py-3 flex items-center justify-between mobile-chat-header">
         <div className="flex items-center space-x-3">
           <div className="relative">
             <img 
@@ -553,7 +554,7 @@ export function ChatInterface() {
             variant="ghost"
             size="sm"
             onClick={toggleTheme}
-            className="text-white hover:text-green-100 p-1"
+            className="touch-target text-white hover:text-green-100 p-1"
           >
             {theme === 'light' ? <Moon className="w-4 h-4" /> : <Sun className="w-4 h-4" />}
           </Button>
@@ -561,7 +562,7 @@ export function ChatInterface() {
             variant="ghost"
             size="sm"
             onClick={handleLogout}
-            className="text-white hover:text-green-100 p-1"
+            className="touch-target text-white hover:text-green-100 p-1"
             title="Logout"
           >
             <LogOut className="w-4 h-4" />
@@ -571,6 +572,7 @@ export function ChatInterface() {
 
       {/* Messages Container */}
       <div className={cn(
+        "chat-messages messages-area",
         "flex-1 overflow-y-auto p-4 space-y-3",
         "bg-gradient-to-b from-gray-50 to-gray-100 dark:from-gray-900 dark:to-gray-800",
         "mobile-chat-messages"
@@ -612,6 +614,7 @@ export function ChatInterface() {
 
       {/* Input Area */}
       <div className={cn(
+        "chat-input-container input-area",
         "p-4 border-t border-gray-200 dark:border-gray-700",
         "bg-gray-50 dark:bg-gray-800",
         "mobile-chat-input"
@@ -624,7 +627,7 @@ export function ChatInterface() {
               variant="ghost"
               size="sm"
               onClick={() => setIsEmojiPickerOpen(!isEmojiPickerOpen)}
-              className="text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 mobile-touch-button"
+              className="touch-target text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 mobile-touch-button"
               disabled={isRecording}
             >
               <Smile className="w-5 h-5" />
@@ -659,7 +662,7 @@ export function ChatInterface() {
             onClick={handleSendMessage}
             disabled={!message.trim() || isRecording}
             className={cn(
-              "bg-green-600 hover:bg-green-700 text-white rounded-full p-2 transition-opacity",
+              "touch-target bg-green-600 hover:bg-green-700 text-white rounded-full p-2 transition-opacity",
               "mobile-touch-button",
               isRecording ? "opacity-50" : "opacity-100"
             )}
