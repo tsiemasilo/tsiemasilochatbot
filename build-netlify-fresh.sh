@@ -11,7 +11,7 @@ rm -rf .vite
 
 # Install dependencies
 echo "Installing dependencies..."
-npm ci
+npm install
 
 # Build the React frontend
 echo "Building React frontend..."
