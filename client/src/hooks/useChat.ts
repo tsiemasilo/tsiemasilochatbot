@@ -14,16 +14,27 @@ export function useChat() {
   const [theme, setTheme] = useState<'light' | 'dark'>('light');
   const [userName, setUserName] = useState<string>('');
   const [hasEnteredName, setHasEnteredName] = useState(false);
-  const { isConnected, isTyping, messages: wsMessages, sendMessage: wsSendMessage, wsRef } = useWebSocket();
+  const { isConnected, isTyping, messages: wsMessages, sendMessage: wsSendMessage, loadMessages, wsRef } = useWebSocket();
   const [allMessages, setAllMessages] = useState<Message[]>([]);
 
   // Load existing messages from API
   const { data: existingMessages, isLoading, refetch } = useQuery({
     queryKey: ['/api/messages', userName],
-    queryFn: () => {
-      const params = new URLSearchParams();
-      if (userName) params.append('userName', userName);
-      return fetch(`/api/messages?${params}`).then(res => res.json());
+    queryFn: async () => {
+      if (!userName) return [];
+      
+      // Use platform-specific loading from useWebSocket
+      if (loadMessages) {
+        await loadMessages(userName);
+        return [];
+      }
+      
+      // Fallback to direct API call
+      const response = await fetch(`/api/messages?userName=${encodeURIComponent(userName)}`);
+      if (!response.ok) {
+        throw new Error('Failed to load messages');
+      }
+      return response.json();
     },
     enabled: isConnected && Boolean(userName),
   });
@@ -63,19 +74,25 @@ export function useChat() {
   // Add WebSocket messages to the list
   useEffect(() => {
     if (wsMessages.length > 0) {
-      const newMessage = wsMessages[wsMessages.length - 1];
       setAllMessages(prev => {
-        // Check if message already exists to avoid duplicates
-        const exists = prev.some(msg => 
-          msg.content === newMessage.content && 
-          msg.isUser === newMessage.isUser &&
-          Math.abs(msg.timestamp.getTime() - newMessage.timestamp.getTime()) < 1000
-        );
+        // Start with existing messages
+        const currentMessages = [...prev];
         
-        if (!exists) {
-          return [...prev, newMessage];
-        }
-        return prev;
+        // Add new WebSocket messages that don't already exist
+        wsMessages.forEach(newMessage => {
+          const exists = currentMessages.some(msg => 
+            msg.content === newMessage.content && 
+            msg.isUser === newMessage.isUser &&
+            Math.abs(msg.timestamp.getTime() - newMessage.timestamp.getTime()) < 1000
+          );
+          
+          if (!exists) {
+            currentMessages.push(newMessage);
+          }
+        });
+        
+        // Sort by timestamp to maintain order
+        return currentMessages.sort((a, b) => a.timestamp.getTime() - b.timestamp.getTime());
       });
     }
   }, [wsMessages]);
@@ -86,6 +103,8 @@ export function useChat() {
 
   const handleSendMessage = (content: string, userNameParam?: string) => {
     if (content.trim()) {
+      // Allow sending even if WebSocket isn't fully connected yet
+      // The WebSocket hook will handle buffering or retrying if needed
       wsSendMessage(content.trim(), userNameParam || userName);
     }
   };
@@ -99,7 +118,10 @@ export function useChat() {
     setHasEnteredName(true);
     localStorage.setItem('userName', name);
     
-    // Refetch messages for the new user (this will trigger automatically due to queryKey change)
+    // Force refetch messages for the new user
+    setTimeout(() => {
+      refetch();
+    }, 100);
   };
 
   const handleLogout = () => {
