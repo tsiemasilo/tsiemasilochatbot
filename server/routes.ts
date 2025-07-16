@@ -63,6 +63,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
             userName: message.userName || 'Anonymous'
           });
           
+          // Broadcast the user's message to all clients immediately
+          broadcast({ 
+            type: 'message', 
+            content: message.content, 
+            isUser: true 
+          });
+          
           // Broadcast typing indicator
           broadcast({ type: 'typing' });
           
