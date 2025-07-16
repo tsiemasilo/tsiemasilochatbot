@@ -530,12 +530,12 @@ export function ChatInterface() {
           <Input
             ref={inputRef}
             type="text"
-            placeholder={isRecording ? "Recording..." : "Type a message..."}
+            placeholder={isRecording ? "Recording..." : isConnected ? "Type a message..." : "Connecting..."}
             value={message}
             onChange={(e) => setMessage(e.target.value)}
             onKeyPress={handleKeyPress}
             className="flex-1 rounded-full border-gray-300 dark:border-gray-600 focus:border-green-500 dark:focus:border-green-400"
-            disabled={!isConnected || isRecording}
+            disabled={isRecording}
           />
           
           <Button
@@ -563,7 +563,7 @@ export function ChatInterface() {
               e.preventDefault();
               e.stopPropagation();
             }}
-            disabled={!isConnected || isRequestingPermission}
+            disabled={isRequestingPermission}
             className={cn(
               "rounded-full p-3 transition-all duration-200",
               "select-none outline-none focus:outline-none",
@@ -596,7 +596,7 @@ export function ChatInterface() {
           
           <Button
             onClick={handleSendMessage}
-            disabled={!message.trim() || !isConnected || isRecording}
+            disabled={!message.trim() || isRecording}
             className={cn(
               "bg-green-600 hover:bg-green-700 text-white rounded-full p-2 transition-opacity",
               isRecording ? "opacity-50" : "opacity-100"
