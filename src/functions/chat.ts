@@ -227,7 +227,7 @@ export const handler: Handler = async (event, context) => {
 
   try {
     // Parse request body
-    const { content, userName } = JSON.parse(event.body || '{}');
+    const { content, userName, type } = JSON.parse(event.body || '{}');
     
     if (!content || !userName) {
       return {
@@ -237,7 +237,7 @@ export const handler: Handler = async (event, context) => {
       };
     }
 
-    console.log(`[Netlify Chat] Processing message from ${userName}: "${content}"`);
+    console.log(`[Netlify Chat] Processing message from ${userName}: "${content}" (type: ${type})`);
 
     // Get or create user
     let user = await db.select().from(users).where(eq(users.username, userName)).limit(1);
@@ -247,6 +247,32 @@ export const handler: Handler = async (event, context) => {
         password: 'netlify-user'
       }).returning();
       user = newUser;
+    }
+
+    // Handle voice_note type differently - store but don't generate AI response
+    if (type === 'voice_note') {
+      console.log('=== VOICE NOTE RECEIVED ===');
+      console.log('Voice note content:', content);
+      console.log('Voice note userName:', userName);
+      
+      // Store voice note display message but don't trigger AI response
+      await db.insert(messages).values({
+        content,
+        isUser: true,
+        userName,
+        timestamp: new Date()
+      });
+      
+      console.log('✓ Voice note stored successfully');
+      
+      return {
+        statusCode: 200,
+        headers,
+        body: JSON.stringify({ 
+          message: 'Voice note stored successfully',
+          type: 'voice_note'
+        })
+      };
     }
 
     // Save user message to database
