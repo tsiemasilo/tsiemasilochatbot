@@ -307,21 +307,12 @@ export function MobileVoiceRecording({
         onPointerLeave={handlePointerLeave}
         onPointerCancel={handlePointerCancel}
         onContextMenu={(e) => e.preventDefault()}
-        disabled={disabled || isProcessing}
+        disabled={true}
         className={cn(
           "w-12 h-12 rounded-full flex items-center justify-center transition-all duration-200",
           "select-none outline-none focus:outline-none",
-          "pointer-events-auto cursor-pointer",
-          "active:scale-95", // Visual feedback for press
-          isRecording 
-            ? "bg-red-600 hover:bg-red-700 text-white scale-110 shadow-lg" 
-            : isProcessing
-            ? "bg-yellow-600 hover:bg-yellow-700 text-white opacity-75"
-            : permissionJustGranted
-            ? "bg-green-600 hover:bg-green-700 text-white animate-pulse"
-            : !micPermissionGranted
-            ? "bg-blue-600 hover:bg-blue-700 text-white"
-            : "bg-gray-600 hover:bg-gray-700 text-white",
+          "pointer-events-none cursor-not-allowed",
+          "bg-gray-400 text-gray-600 opacity-50",
           className
         )}
         style={{ 
@@ -332,17 +323,7 @@ export function MobileVoiceRecording({
           WebkitTapHighlightColor: 'transparent'
         }}
       >
-        {isRecording ? (
-          <MicOff className="w-5 h-5" />
-        ) : isProcessing ? (
-          <Mic className="w-5 h-5 animate-pulse" />
-        ) : permissionJustGranted ? (
-          <Mic className="w-5 h-5 animate-bounce" />
-        ) : !micPermissionGranted ? (
-          <Mic className="w-5 h-5 animate-bounce" />
-        ) : (
-          <Mic className="w-5 h-5" />
-        )}
+        <Mic className="w-5 h-5" />
       </button>
     </>
   );
