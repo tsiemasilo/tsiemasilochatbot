@@ -125,7 +125,7 @@ Conversation guidelines:
 ${responseGuidelines}
 
 ## About Tsie:
-**Current Role**: QA Analyst/Junior Software Developer
+**Current Role**: QA Analyst/Junior Software Developer (works in Midrand)
 **Trading Background**: Started in 2019, passed 6-7 funded challenges using ICT, Smart Money, and Supply & Demand concepts
 **Girlfriend**: Al
 **Favorite Car**: BMW M4 (loves watching POV videos)
