@@ -30,6 +30,15 @@ Successfully imported and configured the project from GitHub repository for the 
 - Successfully pushed schema to PostgreSQL using `npm run db:push`
 - Tables: `users`, `messages`, `user_stats`
 
+### Personality Update (November 13, 2025)
+- **Updated AI Personality**: Changed from heavy South African slang to friendly & professional tone
+- **New Communication Style**: More approachable, clear, and supportive while remaining conversational
+- **Files Updated**:
+  - `server/services/openai.ts` - Main OpenAI service for local development
+  - `src/functions/services/openai.ts` - Serverless function OpenAI service
+- **Tone**: Professional friend rather than street-smart casual
+- **Language**: Everyday English with minimal slang, clearer and more accessible
+
 ### Status
 - ✅ All dependencies installed
 - ✅ Database schema synced
@@ -37,6 +46,7 @@ Successfully imported and configured the project from GitHub repository for the 
 - ✅ Frontend loading successfully with name prompt
 - ✅ WebSocket connections working
 - ✅ Deployment configuration complete
+- ✅ AI personality updated to be more professional and friendly
 
 ## User Preferences
 
