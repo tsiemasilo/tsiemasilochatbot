@@ -4,6 +4,40 @@
 
 This is a full-stack real-time chat application built with React (frontend), Express.js (backend), and WebSocket communication. The application features an AI-powered chatbot that can analyze user mood and provide contextual responses with voice recording capabilities.
 
+## Replit Environment Setup (November 13, 2025)
+
+### Imported from GitHub
+Successfully imported and configured the project from GitHub repository for the Replit environment.
+
+### Configuration Changes
+- **Vite Configuration**: Updated `vite.config.ts` to support Replit's proxy environment:
+  - Host: `0.0.0.0` on port `5000`
+  - HMR client port: `443` for proper hot module replacement through Replit's proxy
+  - Allows all hosts to work with Replit's iframe preview
+  
+### Environment Variables
+- `DATABASE_URL`: PostgreSQL connection (configured via Replit Secrets)
+- `OPENAI_API_KEY`: OpenAI API key for GPT-4 and Whisper (configured via Replit Secrets)
+- `NODE_ENV`: Automatically set to `development` in dev mode, `production` in deployment
+
+### Workflow
+- **Development**: `npm run dev` runs the Express server with Vite middleware on port 5000
+- **Deployment**: Configured as "vm" type (maintains WebSocket connections)
+  - Build: `npm run build`
+  - Run: `node dist/index.js`
+
+### Database
+- Successfully pushed schema to PostgreSQL using `npm run db:push`
+- Tables: `users`, `messages`, `user_stats`
+
+### Status
+- ✅ All dependencies installed
+- ✅ Database schema synced
+- ✅ Development server running on port 5000
+- ✅ Frontend loading successfully with name prompt
+- ✅ WebSocket connections working
+- ✅ Deployment configuration complete
+
 ## User Preferences
 
 Preferred communication style: Simple, everyday language.
