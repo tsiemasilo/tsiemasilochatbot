@@ -27,15 +27,15 @@
 .animated-gradient-bg {
   background: linear-gradient(
     -45deg,
-    #ee7752,
-    #e73c7e,
-    #23a6d5,
-    #23d5ab,
-    #667eea,
-    #764ba2
+    #6b7280,
+    #9ca3af,
+    #d1d5db,
+    #e5e7eb,
+    #a1a1aa,
+    #71717a
   );
   background-size: 400% 400%;
-  animation: gradient-shift 15s ease infinite, gradient-rotate 20s linear infinite;
+  animation: gradient-shift 15s ease infinite;
 }
 
 .animated-gradient-bg-dark {
