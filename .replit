@@ -37,6 +37,10 @@ externalPort = 80
 localPort = 32917
 externalPort = 3000
 
+[[ports]]
+localPort = 39221
+externalPort = 3001
+
 [deployment]
 deploymentTarget = "vm"
 run = ["node", "dist/index.js"]

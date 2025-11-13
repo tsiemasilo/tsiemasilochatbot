@@ -47,8 +47,8 @@ export function WelcomePrompt({ onNameSubmit, theme }: WelcomePromptProps) {
   return (
     <div className={`h-screen flex items-center justify-center p-2 ${
       theme === 'dark' 
-        ? 'bg-gradient-to-br from-gray-900 to-gray-800' 
-        : 'bg-gradient-to-br from-blue-50 to-indigo-100'
+        ? 'animated-gradient-bg-dark' 
+        : 'animated-gradient-bg'
     }`}>
       <Card className={`w-full max-w-xs ${
         theme === 'dark' 
