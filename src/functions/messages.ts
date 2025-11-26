@@ -8,10 +8,9 @@ import ws from "ws";
 // Configure WebSocket for Neon
 neonConfig.webSocketConstructor = ws;
 
-// Database connection - uses environment variables only
-const pool = new Pool({ 
-  connectionString: process.env.DATABASE_URL
-});
+// Database connection - check for NETLIFY_DATABASE_URL first, then DATABASE_URL
+const connectionString = process.env.NETLIFY_DATABASE_URL || process.env.DATABASE_URL;
+const pool = new Pool({ connectionString });
 const db = drizzle(pool, { schema: { messages, users } });
 
 export const handler: Handler = async (event, context) => {
@@ -33,12 +32,12 @@ export const handler: Handler = async (event, context) => {
   }
 
   // Check environment variables
-  if (!process.env.DATABASE_URL) {
-    console.error('[Netlify Messages] DATABASE_URL not configured');
+  if (!process.env.NETLIFY_DATABASE_URL && !process.env.DATABASE_URL) {
+    console.error('[Netlify Messages] No database URL configured');
     return {
       statusCode: 500,
       headers,
-      body: JSON.stringify({ error: 'DATABASE_URL not configured' })
+      body: JSON.stringify({ error: 'No database URL configured (NETLIFY_DATABASE_URL or DATABASE_URL)' })
     };
   }
 
