@@ -11,7 +11,6 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { MessageCircle, User } from 'lucide-react';
-import { AnimatedBackground } from '@/components/ui/animated-background';
 
 interface WelcomePromptProps {
   onNameSubmit: (name: string) => void;
@@ -46,12 +45,7 @@ export function WelcomePrompt({ onNameSubmit, theme }: WelcomePromptProps) {
   };
 
   return (
-    <div className={`h-screen flex items-center justify-center p-2 relative ${
-      theme === 'dark' 
-        ? 'animated-gradient-bg-dark' 
-        : 'animated-gradient-bg'
-    }`}>
-      <AnimatedBackground />
+    <div className="h-screen flex items-center justify-center p-2 relative">
       <Card className={`w-full max-w-xs relative z-10 ${
         theme === 'dark' 
           ? 'bg-gray-800 border-gray-700' 
