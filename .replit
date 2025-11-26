@@ -1,4 +1,4 @@
-modules = ["nodejs-20", "bash", "web"]
+modules = ["nodejs-20", "web", "bash"]
 [agent]
 expertMode = true
 integrations = ["javascript_openai:1.0.0"]
@@ -22,25 +22,25 @@ args = "dev"
 name = "dev"
 author = "agent"
 
+[workflows.workflow.metadata]
+outputType = "webview"
+
 [[workflows.workflow.tasks]]
 task = "shell.exec"
 args = "npm run dev"
 waitForPort = 5000
-
-[workflows.workflow.metadata]
-outputType = "webview"
 
 [[ports]]
 localPort = 5000
 externalPort = 80
 
 [[ports]]
-localPort = 37577
-externalPort = 3000
-
-[[ports]]
 localPort = 39221
 externalPort = 3001
+
+[[ports]]
+localPort = 40511
+externalPort = 3000
 
 [deployment]
 deploymentTarget = "autoscale"
