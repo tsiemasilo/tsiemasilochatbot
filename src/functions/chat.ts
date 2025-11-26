@@ -342,6 +342,25 @@ export const handler: Handler = async (event, context) => {
     };
   }
 
+  // Check environment variables
+  if (!process.env.DATABASE_URL) {
+    console.error('[Netlify Chat] DATABASE_URL not configured');
+    return {
+      statusCode: 500,
+      headers,
+      body: JSON.stringify({ error: 'DATABASE_URL not configured' })
+    };
+  }
+
+  if (!process.env.OPENAI_API_KEY) {
+    console.error('[Netlify Chat] OPENAI_API_KEY not configured');
+    return {
+      statusCode: 500,
+      headers,
+      body: JSON.stringify({ error: 'OPENAI_API_KEY not configured' })
+    };
+  }
+
   try {
     // Parse request body
     const { content, userName, type } = JSON.parse(event.body || '{}');

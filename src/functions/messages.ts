@@ -32,6 +32,16 @@ export const handler: Handler = async (event, context) => {
     };
   }
 
+  // Check environment variables
+  if (!process.env.DATABASE_URL) {
+    console.error('[Netlify Messages] DATABASE_URL not configured');
+    return {
+      statusCode: 500,
+      headers,
+      body: JSON.stringify({ error: 'DATABASE_URL not configured' })
+    };
+  }
+
   try {
     let userName: string;
 
