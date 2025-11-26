@@ -34,10 +34,14 @@ localPort = 5000
 externalPort = 80
 
 [[ports]]
+localPort = 34137
+externalPort = 3000
+
+[[ports]]
 localPort = 39221
 externalPort = 3001
 
 [deployment]
-deploymentTarget = "vm"
-run = ["node", "dist/index.js"]
+deploymentTarget = "autoscale"
+run = ["npm", "run", "start"]
 build = ["npm", "run", "build"]
